@@ -21,7 +21,7 @@ def render(go_to_next_page):
         font-size: 18px !important;
         font-weight: 600 !important;
         margin-bottom: 4px;
-        color: #000000 !important;
+        color: inherit !important;
     }
     </style>
     """, unsafe_allow_html=True)
