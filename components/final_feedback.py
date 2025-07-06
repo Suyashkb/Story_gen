@@ -1,175 +1,128 @@
 import streamlit as st
-import io
-from gtts import gTTS
-from dotenv import load_dotenv
-import os
-import google.generativeai as genai
-from fpdf import FPDF
-import json
+import io, json
 import pandas as pd
+from datetime import datetime
+from fpdf import FPDF
+import gspread
+from google.oauth2.service_account import Credentials
 
-load_dotenv()
+# --- Helpers ---
 
-# Access the API key
-api_key = os.getenv("GOOGLE_API_KEY")
+def get_gsheet():
+    creds = Credentials.from_service_account_info(
+        st.secrets["google_sheets"], scopes=["https://www.googleapis.com/auth/spreadsheets"]
+    )
+    gc = gspread.authorize(creds)
+    return gc.open_by_key(st.secrets["sheet_id"]).sheet1
 
-# Check if the key is available
-if not api_key:
-    st.error("GOOGLE_API_KEY environment variable not set.")
-    st.stop()
+def sanitize_pdf_text(text: str) -> str:
+    return (text.replace("’", "'").replace("“", '"').replace("”", '"')
+                .replace("–", "-").replace("…", "..."))
 
-# Configure the GenAI client
-genai.configure(api_key=api_key)
+def sanitize_data(data):
+    if isinstance(data, str):
+        return sanitize_pdf_text(data)
+    if isinstance(data, dict):
+        return {k: sanitize_data(v) for k, v in data.items()}
+    if isinstance(data, list):
+        return [sanitize_data(v) for v in data]
+    return data
+
+# --- Main Render Function ---
 
 def render(go_to_next_page):
-    st.markdown("## 🧠 Final Feedback")
-    st.write("Please share your experience with the experiment.")
-
-    # Feedback Questions
-    q1 = st.text_area("1. How comfortable were you during the experiment?", key="fb_q1")
-    q2 = st.text_area("2. Did you face any difficulty in understanding or responding?", key="fb_q2")
-    q3 = st.text_area("3. What did you like the most about the experience?", key="fb_q3")
-    q4 = st.text_area("4. Any suggestions for improvement?", key="fb_q4")
-
-    st.session_state["final_feedback"] = {
-        "comfort_level": q1,
-        "difficulties_faced": q2,
-        "liked_most": q3,
-        "suggestions": q4
+    st.header("🧠 Final Feedback")
+    fb = {
+        "comfortable": st.text_area("1. How comfortable were you?"),
+        "difficulties": st.text_area("2. Any difficulty?"),
+        "liked_most": st.text_area("3. What did you like most?"),
+        "suggestions": st.text_area("4. Suggestions?")
     }
-    class PDF(FPDF):
-        def __init__(self):
-            super().__init__()
-            self.set_auto_page_break(auto=True, margin=15)
-            self.set_font("Times", size=15)
+    if st.button("Finish & Save"):
+        st.session_state.final_feedback = fb
 
-        def chapter_title(self, title):
-            self.set_font("Times", "B", 13)
-            self.cell(0, 10, title, ln=True, align='L')
+        # gather all
+        pdata = st.session_state.get("personal_data", {})
+        reflections = st.session_state.get("reflections", {})
+        quiz_answers = st.session_state.get("quiz_answers", {})
+        quiz_scores = st.session_state.get("sc_scores", {})
+        story_sections = st.session_state.get("story_sections", [])
+        final_fb = fb
 
-        def chapter_body(self, body):
-            self.set_font("Times", "", 11)
-            self.multi_cell(0, 10, body)
+        # --- Save to GSheet ---
+        sheet = get_gsheet()
+        row = [
+            datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            json.dumps(pdata),
+            json.dumps(reflections),
+            json.dumps({"answers": quiz_answers, "scores": quiz_scores}),
+            json.dumps(story_sections),
+            json.dumps(final_fb),
+        ]
+        try:
+            sheet.append_row(row)
+            st.success("Saved to Google Sheets 📊")
+        except Exception as e:
+            st.error(f"Error saving: {e}")
 
-        def add_section(self, title, content_dict):
-            self.chapter_title(title)
-            for k, v in content_dict.items():
-                self.chapter_body(f"{k}: {v}")
-                
-    st.success("Thank you for your feedback! Your responses will be used to improve the experiment.")
-    st.success("Your experiment is now complete! ")
+        # --- PDF Generation ---
+        class PDF(FPDF):
+            def __init__(self):
+                super().__init__()
+                self.set_auto_page_break(True, 15)
+                self.add_page()
+                self.set_font("Times", size=12)
+            def add_section(self, title, content):
+                self.set_font("Times", "B", 14)
+                self.cell(0, 10, title, ln=1)
+                self.set_font("Times", "", 12)
+                if isinstance(content, dict):
+                    for k,v in content.items():
+                        self.multi_cell(0, 8, f"{k}: {v}")
+                elif isinstance(content, list):
+                    for i, item in enumerate(content, start=1):
+                        self.multi_cell(0, 8, f"Scene {i}: {item}")
+                else:
+                    self.multi_cell(0, 8, str(content))
+                self.ln(5)
 
-    st.markdown("## Download Your Responses")
-
-    # Gather all data
-    pdata = st.session_state.get("personal_data", {})
-    reflections = st.session_state.get("reflections", {})
-    quiz_answers = st.session_state.get("quiz_answers", {})
-    quiz_scores = st.session_state.get("sc_scores", {})
-    story_sections = st.session_state.get("story_sections", [])
-    final_feedback = st.session_state.get("final_feedback", {})
-
-    # 1. JSON Export
-    export_data = {
-        "personal_data": pdata,
-        "stories": story_sections,
-        "reflections": reflections,
-        "self_compassion_quiz": {
-            "answers": quiz_answers,
-            "scores": quiz_scores
-        },
-        "final_feedback": final_feedback
-    }
-
-    st.download_button(
-        "📁 Download as JSON",
-        data=json.dumps(export_data, indent=2),
-        file_name="reflection_summary.json"
-    )
-            
-    # Function to generate PDF content
-    #2. PDF Export
-    def generate_pdf():
         pdf = PDF()
-        pdf.add_page()
-
-        # Personal Data
-        pdf.add_section("Personal Data", pdata)
-
-        # Reflections
-        pdf.add_section("Reflections", reflections)
-
-        # Quiz Answers
-        if quiz_answers:
-            pdf.add_section("Self-Compassion Quiz Answers", quiz_answers)
-
-        # Quiz Scores
-        if quiz_scores:
-            pdf.add_section("Self-Compassion Quiz Scores", quiz_scores)
-
-        # Add LLM-generated story scenes
+        pdf.add_section("Personal Data", sanitize_data(pdata))
+        pdf.add_section("Reflections", sanitize_data(reflections))
+        pdf.add_section("Quiz Responses & Scores", sanitize_data({"answers": quiz_answers, "scores": quiz_scores}))
         if story_sections:
-            pdf.chapter_title("Generated Story")
-            for i, scene in enumerate(story_sections):
-                pdf.chapter_body(f"Scene {i+1}: {scene}")
+            pdf.add_section("Generated Story", sanitize_data(story_sections))
+        pdf.add_section("Final Feedback", sanitize_data(final_fb))
 
-        # Final Feedback
-        if final_feedback:
-            pdf.add_section("Final Feedback", final_feedback)
+        pdf_bytes = pdf.output(dest='S').encode('latin-1')
+        st.download_button("Download PDF report", data=io.BytesIO(pdf_bytes),
+                            file_name=f"{pdata.get('name','participant')}_report.pdf", mime="application/pdf")
 
-        # Generate and return the PDF in memory
-        pdf_output = pdf.output(dest='S').encode('latin-1')
-        return io.BytesIO(pdf_output)
+        # --- CSV Download ---
+        csv_rows = []
+        def append_csv(section, data):
+            if isinstance(data, dict):
+                for k,v in data.items():
+                    csv_rows.append({"Section": section, "Question": k, "Response": v})
+            elif isinstance(data, list):
+                for i, v in enumerate(data, start=1):
+                    csv_rows.append({"Section": section, "Question": f"Scene {i}", "Response": v})
+            else:
+                csv_rows.append({"Section": section, "Question": "", "Response": data})
 
-    # Get participant name for file naming
-    participant_name = pdata.get("name", "participant").strip().replace(" ", "_")
-    pdf_file_name = f"Summary_{participant_name}.pdf"
+        append_csv("Personal Data", pdata)
+        append_csv("Reflections", reflections)
+        append_csv("Quiz & Scores", {"answers": quiz_answers, "scores": quiz_scores})
+        append_csv("Generated Story", story_sections)
+        append_csv("Final Feedback", final_fb)
 
-    # ✅ PDF Download Button (single button!)
-    st.download_button(
-        label="📄 Download as PDF",
-        data=generate_pdf(),
-        file_name=pdf_file_name,
-        mime="application/pdf"
-    )
+        df = pd.DataFrame(csv_rows)
+        st.download_button("Download CSV", data=df.to_csv(index=False), file_name="results.csv", mime="text/csv")
 
-    # Function to generate CSV content
-    def generate_csv():
-        csv_data = []
-
-        def append_section(section_name, data_dict):
-            for k, v in data_dict.items():
-                csv_data.append({
-                    "Section": section_name,
-                    "Question": k,
-                    "Response": v
-                })
-
-        append_section("Personal Data", pdata)
-        append_section("Reflections", reflections)
-        append_section("Self-Compassion Quiz Answers", quiz_answers)
-        append_section("Self-Compassion Quiz Scores", quiz_scores)
-        append_section("Final Feedback", final_feedback)
-
-        if story_sections:
-            for i, section in enumerate(story_sections):
-                csv_data.append({
-                    "Section": "Generated Story",
-                    "Question": f"Scene {i+1}",
-                    "Response": section
-                })
-
-        df = pd.DataFrame(csv_data)
-        csv_buffer = io.StringIO()
-        df.to_csv(csv_buffer, index=False)
-        return csv_buffer.getvalue()
-
-    # ✅ CSV Download Button (single button!)
-    st.download_button(
-        label="📊 Download as CSV (Google Sheets Compatible)",
-        data=generate_csv(),
-        file_name="reflection_summary.csv",
-        mime="text/csv"
-    )
-    
-   
+        st.success("✅ Completed!")
+        callback()
+        st.stop()
+        
+        go_to_next_page = st.session_state.get("go_to_next_page", lambda: None)
+        st.success("✅ Completed!")
+        st.stop()

@@ -31,6 +31,7 @@ elif st.session_state.page == "story":
     story.render(go_to_next_page)
 
 elif st.session_state.page == "final_feedback":
-    final_feedback.render(lambda: None)
+    final_feedback.render(go_to_next_page)
+    
 else:
     st.error("You are done !!")

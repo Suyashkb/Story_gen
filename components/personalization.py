@@ -1,35 +1,32 @@
 import streamlit as st
 
 def render(go_to_next_page):
-    st.title("Let's Personalize Your Experience")
+    st.title("The Inner Mirror: A Journey to Understanding and Growth")
 
     with st.form("personal_form"):
-        st.subheader("Individual Profile")
-        name = st.text_input("1. What's your name or nickname?")
-        age = st.number_input("2. How old are you?", min_value=10, max_value=100)
-        profession = st.text_input("3. What do you do (student/professional/other)?")
-        emotion = st.text_input("4. What's your current emotion or mood?")
-        st.markdown("_Tip: You can use a color to describe your emotion. For example: red=anger, blue=sadness, yellow=joy._")
-        issue = st.text_area("5. Is there anything on your mind or something you're dealing with?")
 
-        st.markdown("---")
-        st.subheader("Socio-Cultural Context")
-        influencer = st.text_input("6. Who has been the most influential figure in your life?")
-        social_pressure = st.text_input("7. Are there societal pressures you experience?")
-        expectation = st.text_input("8. Do you feel burdened by expectations (family/society)?")
-
+        name = st.text_input("1. What's your name or nickname?", placeholder="This could be your full name, a shortened name or whatever feels most 'you'. ")
+        age = st.number_input("2. How old are you?", min_value=0, max_value=100)
+        gender=st.text_input("3. How do you identify yourself? (Gender)")
+        profession = st.text_input("4. What are you currently doing in life?", placeholder="For example: A student ? Working ? Figuring things out ? Somewhere in between?")
+        university=st.text_input("5. What is your university or company name?")
+        emotion = st.text_area("6. Is there anything on your mind right now ?",placeholder= "You can write about something you're thinking about, feeling, or dealing with - big or small, joyful or stressful. ")
+        society = st.text_area("7. Do you find that values like working hard and staying strong make it harder to be gentle with yourself?", placeholder=" We want to understand if focusing on achievement or toughness sometime gets in the way of self-care fro you ?")
+        family_oriented=st.text_area("8. Do you feel that family expectations or traditions sometimes make it difficult to be kind to yourself ?", placeholder="Sometimes, what's expected at home can affect how we treat ourselves. Let us know if this is true for you.")
+        institute_related=st.text_area("9. Are there any rules or ways of doing things in your college/institute that make it tricky to practice being kind to yourself?", placeholder="Sometimes, the way things are done can make self-kindness harder. Please share any experiences like this.")
         submitted = st.form_submit_button("Continue ➡️")
 
-    if submitted and all([name, age, profession, emotion, issue, influencer, social_pressure, expectation]):
+    if submitted and all([name, age, profession,gender, university, emotion, society, family_oriented, institute_related]):
         st.session_state.personal_data = {
             "name": name,
             "age": age,
+            "gender":gender,
             "profession": profession,
             "emotion": emotion,
-            "issue": issue,
-            "influencer": influencer,
-            "social_pressure": social_pressure,
-            "expectation": expectation
+            "society": society,
+            "family_oriented": family_oriented,
+            "institute_related": institute_related,
+            "university": university
         }
         go_to_next_page()
         st.rerun()

@@ -2,7 +2,7 @@ import streamlit as st
 
 def render(go_to_next_page):
     st.set_page_config(page_title="Self-Compassion Quiz", layout="centered")
-    st.title("🧠 Self-Compassion Quiz")
+    st.title("🧠 Self-Compassion ")
 
     st.markdown("""
     #### 📝 Before you begin:

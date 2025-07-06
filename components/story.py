@@ -31,7 +31,8 @@ def render(go_to_next_page):
         st.session_state.reflections = {}
         st.session_state.ongoing_story = ""
         st.session_state.generating = False
-        
+        st.session_state.story_sections = []  
+
     # --- Scenario Selection ---
     def get_kindness_story(score):
         if score <= 7:
@@ -258,11 +259,10 @@ def render(go_to_next_page):
     # Narrative scene generator
     def generate_narrative_scene(theme_name, base_template, idx):
         prompt = f"""
-    You are a gentle, skilled writer who connects emotional narratives. Write a scene for the character {pdata['name']} (age {pdata['age']}), a {pdata['profession']} dealing with: "{pdata['issue']}". Their current emotional state: "{pdata['emotion']}".
-    They are shaped by:
-    - Influencer: {pdata['influencer']}
-    - Societal pressure: {pdata['social_pressure']}
-    - Expectations: {pdata['expectation']}
+    You are a gentle, skilled writer who connects emotional narratives. Write a scene for the character {pdata['name']} (age {pdata['age']}), gender {pdata['gender']}, a {pdata['profession']} ".
+    They are their answer to specific questions about thier life format the story based on these:
+    -Is there anything on your mind right now ?" {pdata['emotion']}
+    -Do you feel that family expectations or traditions sometimes make it difficult to be kind to yourself  {pdata['family_oriented']}
 
     Theme: **{theme_name}**
 
@@ -273,7 +273,8 @@ def render(go_to_next_page):
     {base_template}
 
     Personalise the theme for the above mentioned reader. Keep it grounded, not overly dramatic, and use subtle Indian college cues. and try to use easy vocabulary. Use simple language and no complex metaphors.
-    The story should be less than 2-3 small paragraphs with similar monologues and dialogues as the theme scene. Do not use em dashes.
+    The story should be less than 2-3 small paragraphs with similar monologues and dialogues as the theme scene. Do not use em dashes. 
+    Also make sure to not repeat the same story as the theme scene, but rather use it as a exhaustive base and edit to this person's scenario. Do not use the exact same scene/scenario as the ongoing story
     """
         try:
             with st.spinner(f"✍️ Generating scene {idx}..."):
@@ -287,6 +288,7 @@ def render(go_to_next_page):
                 text = response.text.strip()
                 st.session_state.story_text[idx] = text
                 st.session_state.ongoing_story += "\n\n" + text
+                st.session_state.story_sections.append(text)  # ✅ This line is essential
                 st.session_state.current_scene_index += 2
         except Exception as e:
             st.session_state.story_text[idx] = f"❌ Error generating scene {idx}: {e}"

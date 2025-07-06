@@ -11,13 +11,13 @@ def render(go_to_next_page):
         st.write("Focus on your breath and stay still. A gentle sound will indicate the end.")
 
         if "eyes_closed_started" not in st.session_state:
-            if st.button("Start Meditation"):
+            if st.button("Begin Activity"):
                 st.session_state.eyes_closed_started = True
                 st.session_state.timer_start = time.time()
                 st.rerun()
         else:
             elapsed = time.time() - st.session_state.timer_start
-            remaining = int(60 - elapsed)
+            remaining = int(2- elapsed)
 
             if remaining > 0:
                 st.write(f"⏳ Time left: **{remaining} seconds**")
@@ -48,7 +48,7 @@ def render(go_to_next_page):
                 st.rerun()
         else:
             elapsed_time = time.time() - st.session_state.activity_start_time
-            remaining = int(60 - elapsed_time)
+            remaining = int(2 - elapsed_time)
             st.write(f"⏳ Time left: **{remaining} seconds**")
 
             if "dot_color" not in st.session_state:
