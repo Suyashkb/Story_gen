@@ -274,8 +274,10 @@ def render(go_to_next_page):
 
     Personalise the theme for the above mentioned reader. Keep it grounded, not overly dramatic, and use subtle Indian college cues. and try to use easy vocabulary. Use simple language and no complex metaphors.
     The story should be less than 2-3 small paragraphs with similar monologues and dialogues as the theme scene. Do not use em dashes. 
-    Also make sure to not repeat the same story as the theme scene, but rather use it as a exhaustive base and edit to this person's scenario. Do not use the exact same scene/scenario as the ongoing story
+    Also make sure to not repeat the same story as the theme scene, but rather use it as a exhaustive base and edit to this person's scenario. Do not use the exact same scene/scenario as the ongoing story. 
+    Instead of using the quwstions again in the story try intergrating their answers to those questions into the narrative in a subtle way.
     """
+    
         try:
             with st.spinner(f"✍️ Generating scene {idx}..."):
                 start_time = time.time()

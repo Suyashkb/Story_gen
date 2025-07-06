@@ -16,8 +16,16 @@ def get_gsheet():
     return gc.open_by_key(st.secrets["sheet_id"]).sheet1
 
 def sanitize_pdf_text(text: str) -> str:
-    return (text.replace("’", "'").replace("“", '"').replace("”", '"')
+    original = text
+    text = (text.replace("’", "'").replace("‘", "'")
+                .replace("“", '"').replace("”", '"')
                 .replace("–", "-").replace("…", "..."))
+    try:
+        return text.encode("latin-1").decode("latin-1")
+    except UnicodeEncodeError:
+        print("⚠️ Skipped some characters in:", original)
+        return text.encode("latin-1", "ignore").decode("latin-1")
+
 
 def sanitize_data(data):
     if isinstance(data, str):
@@ -54,14 +62,15 @@ def render(go_to_next_page):
         row = [
             datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
             json.dumps(pdata),
-            json.dumps(reflections),
             json.dumps({"answers": quiz_answers, "scores": quiz_scores}),
             json.dumps(story_sections),
+            json.dumps(reflections),
             json.dumps(final_fb),
         ]
         try:
             sheet.append_row(row)
-            st.success("Saved to Google Sheets 📊")
+            st.success("Saved !!")
+            st.success("Thank you for participating in the experiment!")
         except Exception as e:
             st.error(f"Error saving: {e}")
 
@@ -120,7 +129,7 @@ def render(go_to_next_page):
         st.download_button("Download CSV", data=df.to_csv(index=False), file_name="results.csv", mime="text/csv")
 
         st.success("✅ Completed!")
-        callback()
+    
         st.stop()
         
         go_to_next_page = st.session_state.get("go_to_next_page", lambda: None)
