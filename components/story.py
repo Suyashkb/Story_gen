@@ -3,37 +3,86 @@ import io
 from gtts import gTTS
 from dotenv import load_dotenv
 import os
+import re
 import google.generativeai as genai
-import threading
-import time
+# --- MODIFICATION: Import Hugging Face client ---
+#from huggingface_hub import InferenceClient
 
-
+# Load environment variables
 load_dotenv()
-api_key = st.secrets.get("GOOGLE_API_KEY")
 
-if not api_key:
-    st.error("GOOGLE_API_KEY environment variable not set.")
+# Get Google API Key from Streamlit secrets
+google_api_key = st.secrets.get("GOOGLE_API_KEY", os.getenv("GOOGLE_API_KEY"))
+
+if not google_api_key:
+    st.error("❌ GOOGLE_API_KEY is not set.")
     st.stop()
 
-genai.configure(api_key=api_key)
-model = genai.GenerativeModel("models/gemma-3-4b-it")
+# Configure the generative AI model
+try:
+    genai.configure(api_key=google_api_key)
+    # Using gemini-1.5-flash as it's fast and effective for creative text
+    model = genai.GenerativeModel('gemini-1.5-flash-latest') 
+except Exception as e:
+    st.error(f"Could not initialize the Google Generative AI Client. Error: {e}")
+    st.stop()
 
+
+
+# --- Main Render Function ---
 def render(go_to_next_page):
+    # This is a guard clause. To see this page, you MUST navigate from the previous pages.
+    if "sc_scores" not in st.session_state or "personal_data" not in st.session_state:
+        st.warning("⚠️ Required data not found. Please start the journey from the beginning.")
+        if st.button("Go to Start"):
+            st.session_state.page = "start"  # Navigate to your first page
+            st.rerun()
+        st.stop()
+
     st.title("📖 Your Personalized Narrative Journey")
 
+    # --- Initialize State ---
     scores = st.session_state.sc_scores
     pdata = st.session_state.personal_data
 
-    # State setup
-    if "story_text" not in st.session_state:
+    if "current_scene" not in st.session_state:
+        st.session_state.current_scene = 1
         st.session_state.story_text = {2: None, 4: None, 6: None}
         st.session_state.generated_audio = {}
         st.session_state.reflections = {}
         st.session_state.ongoing_story = ""
-        st.session_state.generating = False
-        st.session_state.story_sections = []  
+        st.session_state.story_sections = []
+        st.session_state.scene_paragraph_idx = {}
 
-    # --- Scenario Selection ---
+    # --- All Helper Functions MUST be defined inside `render` ---
+
+    neutral_scenes = {
+        1: """The room was located in the basement of the building. Access was through a heavy door with a numeric keypad lock. Inside, the air was consistently cool and dry, maintained by a climate control system that hummed at a low, steady frequency. The only illumination came from long fluorescent light panels on the ceiling, which cast an even, shadowless light across the space.
+        The floor was polished concrete, and the walls were painted a uniform off-white. Along the length of the room, there were six rows of metal shelving units, bolted to the floor and ceiling. Each unit was six shelves high and divided into sections by thin metal partitions. The shelves were filled with cardboard archive boxes of a standard size and color, a neutral beige. 
+        Every box had a white label affixed to its front. On each label, a sequence of alphanumeric characters was printed in black ink, corresponding to a location index in a database. The boxes were aligned flush with the edge of the shelves. A person entered the room, their footsteps making no sound on the concrete floor. 
+        They consulted a tablet, then walked to the third aisle, fourth unit, second shelf from the top. They located the box with the label FIN-Q3-2024-B7. Using both hands, they slid the box forward, off the shelf, and placed it onto a rolling metal cart that had been brought in. The box was then wheeled back towards the door. After exiting, the door was closed, and the lock engaged with an audible click, leaving the room in its previous state of order and silence.
+        """,
+        
+        3: """The control room overlooked the sedimentation tanks through a large pane of reinforced glass. Inside, the environment was sterile and quiet. A series of monitors were arranged in a semi-circle on a long console. Each monitor displayed a different data feed: flow rates, pH levels, turbidity measurements, and chlorine concentrations. 
+        The numbers and graphs updated in real-time, with green figures indicating values within the acceptable range and yellow figures indicating a deviation requiring monitoring. No figures were red. On the main screen, a schematic of the entire plant was displayed.Blue lines showed the path of water moving from the primary intake pumps, through the coagulation and flocculation basins, and into the sedimentation tanks visible through the window. 
+        Small icons on the schematic blinked at a regular interval, signifying that each piece of equipment was online and operational. The operator on duty observed the screens, periodically making entries into a digital logbook on a separate computer. The keyboard clicks were the only sharp sounds in the room. Outside, the water in the large concrete tanks was still and grey. 
+        A mechanical scraper arm, extending across the width of a tank, moved very slowly from one end to the other. Its function was to collect settled solids from the bottom of the tank and move them towards a collection hopper. The arm’s progress was almost imperceptible unless one focused on its position relative to a fixed point on the tank’s edge. After completing its pass, it would reverse direction and begin the process again. The cycle was continuous, operating 24 hours a day.
+        """,
+        
+        5: """The book was placed on the copy stand to the left of the scanner. It was an old textbook, its cover showing signs of wear along the spine and corners. The scanner was a planetary model, with an overhead camera and two lighting arrays positioned at 45-degree angles to prevent glare. A V-shaped cradle supported the book, allowing its pages to lie as flat as possible without putting stress on the binding. 
+        The operator wore thin, white cotton gloves to avoid transferring oils to the paper. The process began. The operator turned to the first page, using a thin, flat tool made of bone to gently hold the page down at the edge. They checked the focus on the monitor, then pressed a foot pedal. The lights flashed for a fraction of a second, and the image of the page appeared on the screen. 
+        The software automatically cropped and de-skewed the image, saving it as a TIFF file in a designated folder. The file was named 0001.tiff. The operator then turned to the next page. They carefully lifted the page from the right side and laid it down on the left, ensuring it was aligned within the guides on the cradle. Again, the foot pedal was pressed. The lights flashed. 
+        The image appeared, was processed, and was saved as 0002.tiff. This sequence of actions—turning the page, checking alignment, pressing the pedal—was repeated without variation. The only goal was to create a complete and accurate digital surrogate of the physical object, one page at a time."""
+    }
+    
+    neutral_question = "Did this scene evoke any particular feelings or thoughts for you? If so, please share them below."
+    
+    static_reflective_questions = {
+        2: ("How much do you relate to the main character in this scene ?", "When you think about the main character's struggle in this scene, did you feel like they deserved understanding or support ? Why or why not ?"),
+        4: ("How much do you relate to the main character in this scene ?", "When you think about the main character's struggle in this scene, did you feel like they deserved understanding or support ? Why or why not ?"),
+        6: ("How much do you relate to the main character in this scene ?", "When you think about the main character's struggle in this scene, did you feel like they deserved understanding or support ? Why or why not ?")
+    }
+
     def get_kindness_story(score):
         if score <= 7:
             return """Ananya stood frozen in front of the mirror in her cramped hostel room near her college. The ceiling fan creaked overhead, but her thoughts were louder, harsher. She stared at her reflection with disgust; the acne scars she couldn’t hide, the dark circles under her eyes from another night of cramming, and worst of all, the memory of how she’d snapped at her chemistry teacher.
@@ -93,7 +142,6 @@ def render(go_to_next_page):
             And by living gently, out loud; she reminded others that failure didn’t mean they were unworthy. It just meant they were human.
             And being human, Tanya now knew, was a story worth showing up for; even when the scene wasn’t perfect.
             """
-
     def get_humanity_story(score):
         if score <= 7:
             return """Riya sat cross-legged on her bed, her sketchpad untouched beside her. She had flunked an important college assignment. Outside, the world seemed to spin without her- Instagram stories of friends laughing in Sarojini Nagar, café boomerangs, reels celebrating ‘productive Sundays’. But in her room, the silence pressed in.
@@ -237,155 +285,202 @@ def render(go_to_next_page):
             Sometimes, he'd gently remind them, “You’re not perfect. You’re the one showing up with the courage to try again.” And slowly, like the soft return of a familiar raag, acceptance began to hum through the group.
             """
 
-    # Themes for narrative scenes
+
     themes = [
-        ("Self-Kindness vs Self-Judgment", get_kindness_story(scores["Self-Kindness vs Self-Judgment"])),
-        ("Common Humanity vs Isolation", get_humanity_story(scores["Common Humanity vs Isolation"])),
-        ("Mindfulness vs Overidentification", get_mindfulness_story(scores["Mindfulness vs Overidentification"])),
-    ]
-
-    # Initialize state
-    if "story_text" not in st.session_state:
-        st.session_state.story_text = {2: None, 4: None, 6: None}
-    if "generated_audio" not in st.session_state:
-        st.session_state.generated_audio = {}
-    if "reflections" not in st.session_state:
-        st.session_state.reflections = {}
-    if "ongoing_story" not in st.session_state:
-        st.session_state.ongoing_story = ""
-    if "current_scene_index" not in st.session_state:
-        st.session_state.current_scene_index = 2
-
-    # Narrative scene generator
-    def generate_narrative_scene(theme_name, base_template, idx):
-        prompt = f"""
-    You are a gentle, skilled writer who connects emotional narratives. Write a scene for the character {pdata['name']} (age {pdata['age']}), gender {pdata['gender']}, a {pdata['profession']} ".
-    They are their answer to specific questions about thier life format the story based on these:
-    -Is there anything on your mind right now ?" {pdata['emotion']}
-    -Do you feel that family expectations or traditions sometimes make it difficult to be kind to yourself  {pdata['family_oriented']}
-
-    Theme: **{theme_name}**
-
-    Ongoing story so far:
-    \"\"\"{st.session_state.ongoing_story}\"\"\"
-
-    Now continue the narrative, weaving in this emotional base:
-    {base_template}
-
-    Personalise the theme for the above mentioned reader. Keep it grounded, not overly dramatic, and use subtle Indian college cues. and try to use easy vocabulary. Use simple language and no complex metaphors.
-    The story should be less than 2-3 small paragraphs with similar monologues and dialogues as the theme scene. Do not use em dashes. 
-    Also make sure to not repeat the same story as the theme scene, but rather use it as a exhaustive base and edit to this person's scenario. Do not use the exact same scene/scenario as the ongoing story. 
-    Instead of using the quwstions again in the story try intergrating their answers to those questions into the narrative in a subtle way.
-    """
+            ("Self-Kindness vs Self-Judgment", get_kindness_story(scores["Self-Kindness vs Self-Judgment"])),
+            ("Common Humanity vs Isolation", get_humanity_story(scores["Common Humanity vs Isolation"])),
+            ("Mindfulness vs Overidentification", get_mindfulness_story(scores["Mindfulness vs Overidentification"])),
+        ]
+    themes_map = {2: themes[0], 4: themes[1], 6: themes[2]}
     
+    def extract_story_from_llm_output(raw_text: str) -> str:
+        """
+        Extracts the core story text from the LLM's raw output,
+        removing preambles and code blocks.
+        """
+        # Pattern to find content inside triple quotes, handling multiline text
+        match = re.search(r'"""(.*?)"""', raw_text, re.DOTALL)
+        if match:
+            return match.group(1).strip()
+
+        # Fallback: if no triple quotes, assume the first long paragraph is the start
+        lines = raw_text.split('\n')
+        story_lines = []
+        found_story = False
+        for line in lines:
+            # Heuristic to find the start of the story
+            if len(line.strip()) > 50: # Assume a story paragraph is reasonably long
+                found_story = True
+            if found_story:
+                story_lines.append(line)
+
+        return "\n".join(story_lines).strip() if story_lines else raw_text.strip()
+
+    # --- MODIFICATION: Updated to use Hugging Face client ---
+    def generate_story_text(scene_idx, ongoing_story, _pdata):
+        theme_name, base_template = themes_map[scene_idx]
+        
+        # This prompt is based on your original, successful Gemma prompt
+        prompt = f"""
+        You are a gentle, skilled writer who connects emotional narratives. Write a scene for the character {_pdata['name']} (age {_pdata['age']}), a {_pdata['profession']}.
+
+        Subtly integrate the following context about the character's state of mind and background:
+        - Current emotion: '{_pdata['emotion']}'
+        - Perspective on family expectations: '{_pdata['family_oriented']}'
+
+        The theme for this specific scene is: **{theme_name}**
+
+        Here is the story so far:
+        \"\"\"
+        {ongoing_story}
+        \"\"\"
+
+        Please continue the narrative, using this theme template as a structural and emotional base:
+        \"\"\"
+        {base_template}
+        \"\"\"
+
+        ### Instructions
+        1.  Personalize the theme for the character.
+        2.  Keep the tone grounded and subtle, with Indian college-life cues if appropriate.
+        3.  Use simple, accessible language.
+        4.  The output must be 2-3 short paragraphs.
+        5.  Do not repeat the base template or the ongoing story verbatim. Adapt and evolve the narrative.
+        6.  The response must be **only the raw story text**. Do not include any titles, headings, or introductions like "Here is the scene...".
+        """
+        
         try:
-            with st.spinner(f"✍️ Generating scene {idx}..."):
-                start_time = time.time()
-                response = model.generate_content(prompt)
-                duration = time.time() - start_time
-
-                if duration > 60:
-                    st.warning(f"Scene {idx} took unusually long to generate ({int(duration)}s)")
-
-                text = response.text.strip()
-                st.session_state.story_text[idx] = text
-                st.session_state.ongoing_story += "\n\n" + text
-                st.session_state.story_sections.append(text)  # ✅ This line is essential
-                st.session_state.current_scene_index += 2
+            # Call the Google Generative AI API
+            response = model.generate_content(prompt)
+            
+            # Directly return the clean text from the response
+            return extract_story_from_llm_output(response.text)
+            
         except Exception as e:
-            st.session_state.story_text[idx] = f"❌ Error generating scene {idx}: {e}"
-
-    scene_indices = [2, 4, 6]
-    themes_map = dict(zip(scene_indices, themes))
-
-    # Find the next scene that needs to be generated
-    next_scene_to_generate = None
-    for idx in scene_indices:
-        if st.session_state.story_text[idx] is None:
-            next_scene_to_generate = idx
-            break
-
-    # If there is a scene to generate, generate it and then rerun the app
-    if next_scene_to_generate:
-        theme_name, base_template = themes_map[next_scene_to_generate]
-        generate_narrative_scene(theme_name, base_template, next_scene_to_generate)
-        # Force the script to run again from the top.
-        # This will preserve session_state, check for the *next* None scene,
-        # and generate it, creating the desired sequential effect.
-        st.rerun()
-
-    # TTS generator
-    def generate_tts_audio(text):
-        try:
-            tts = gTTS(text=text, lang='en')
-            audio_fp = io.BytesIO()
-            tts.write_to_fp(audio_fp)
-            audio_fp.seek(0)
-            return audio_fp.read()
-        except Exception as e:
-            st.error(f"TTS error: {e}")
+            st.error(f"❌ Error generating story with Gemma: {e}")
             return None
 
-    # Neutral scenes
-    neutral_scenes = {
-        1: "The hallway was quiet, with white walls lined by evenly spaced doors. A ceiling fan rotated slowly above, making a faint whirring sound. A fluorescent light flickered once before settling into a steady glow. On the floor, a small plastic sign read “Caution: Wet Floor.” In the distance, a printer beeped once and then went silent.",
-        3: "A man sat at a desk, typing on a keyboard as a clock ticked softly on the wall. A half-full cup of water stood beside a stack of paper. The computer screen displayed a spreadsheet filled with rows and columns. Outside the window, cars moved slowly along a straight road. The fluorescent light overhead cast a uniform glow across the room.",
-        5: "The elevator doors opened with a quiet ding. Inside, the walls were made of brushed metal and a mirror reflected the empty space. A panel of numbered buttons glowed faintly in the corner. The floor was carpeted in a dull gray. The doors closed again, and the elevator began its ascent.",
-    }
 
-    neutral_question = "Did you think about anything during this scene?"
+    # @st.cache_data
+    # def generate_tts_audio(_text):
+    #     try:
+    #         tts = gTTS(text=_text, lang='en', slow=False)
+    #         audio_fp = io.BytesIO()
+    #         tts.write_to_fp(audio_fp)
+    #         audio_fp.seek(0)
+    #         return audio_fp.read()
+    #     except Exception as e:
+    #         st.error(f"TTS error: {e}")
+    #         return None
 
-    static_reflective_questions = {
-        2: ["On a scale of 1–10, how much do you relate to the main character?", "Did you feel they deserved support? Why or why not?"],
-        4: ["On a scale of 1–10, how much do you relate to the main character?", "Did it remind you of anyone else’s struggles?"],
-        6: ["On a scale of 1–10, how much do you relate to the main character?", "When you're upset, do your feelings take over your perspective? How do you cope?"],
-    }
+    def display_paragraph_by_paragraph(scene_idx, full_text):
+    # Split the full text into a list of paragraphs
+        paras = [p.strip() for p in full_text.split("\n") if p.strip()]
+        if not paras: # Handle cases with no text
+            return True
 
-    # --- Display scenes progressively ---
-    for i in range(1, 7):
-        st.markdown(f"### Scene {i}")
+        # Get the paragraph index for the current scene from session state
+        key_idx = f"para_idx_{scene_idx}"
+        if key_idx not in st.session_state.scene_paragraph_idx:
+            st.session_state.scene_paragraph_idx[key_idx] = 0
+        
+        current_para_idx = st.session_state.scene_paragraph_idx[key_idx]
 
-        if i % 2 == 1:
-            scene_text = neutral_scenes[i]
+        # --- MODIFICATION ---
+        # Instead of a loop, display only the single paragraph at the current index.
+        # The previous paragraphs will be replaced on each rerun.
+        st.markdown(f"<p style='padding: 1rem; border-left: 5px solid #d3d3d3; border-radius: 5px; margin-bottom: 1rem;'>{paras[current_para_idx]}</p>", unsafe_allow_html=True)
+        
+        # Check if there are more paragraphs left in the scene
+        if current_para_idx < len(paras) - 1:
+            # Show a button to advance to the next paragraph
+            if st.button("Continue Reading 👇", key=f"next_para_btn_{scene_idx}"):
+                st.session_state.scene_paragraph_idx[key_idx] += 1
+                st.rerun()
+            return False # Indicates the story section is still ongoing
+        
+        return True # Indicates all paragraphs for this scene have been displayed
+
+    def show_scene(scene_idx):
+        st.header(f"Scene {scene_idx} / 6")
+        st.divider()
+
+        # Determine if the current scene is a neutral, static one
+        is_neutral_scene = scene_idx % 2 == 1
+        full_text = None
+
+        if is_neutral_scene:
+            # --- NEUTRAL SCENE ---
+            full_text = neutral_scenes[scene_idx]
+            
+            # **PRE-GENERATION LOGIC**
+            # While the user reads this neutral scene, generate the next story scene.
+            next_story_scene_idx = scene_idx + 1
+            if next_story_scene_idx <= 6:
+                if st.session_state.story_text.get(next_story_scene_idx) is None:
+                    # This runs "in the background" from the user's perspective.
+                    # The user sees the neutral text while this call completes.
+                    new_text = generate_story_text(next_story_scene_idx, st.session_state.ongoing_story, pdata)
+                    if new_text:
+                        st.session_state.story_text[next_story_scene_idx] = new_text
+                        # IMPORTANT: We only update the 'ongoing_story' state when the scene is actually displayed,
+                        # not during pre-generation. We'll do that in the 'else' block below.
+                    else:
+                        # Store a failure marker to prevent re-tries
+                        st.session_state.story_text[next_story_scene_idx] = "GENERATION_FAILED"
+
         else:
-            scene_text = st.session_state.story_text.get(i)
-            if scene_text is None:
-                st.info(f"✍️ Generating scene {i}... please wait.")
-                break  # Stop rendering further scenes until this one is ready
+            # --- GENERATED STORY SCENE ---
+            # Check if the text is ready (either pre-generated or needs generating now)
+            if st.session_state.story_text.get(scene_idx) is None:
+                # This block will only run for the very first story scene (Scene 2)
+                # or if pre-generation failed.
+                with st.spinner("✍️ Crafting the next part of your story... this may take a moment."):
+                    new_text = generate_story_text(scene_idx, st.session_state.ongoing_story, pdata)
+                    if new_text:
+                        st.session_state.story_text[scene_idx] = new_text
+                        # It's time to show this scene, so add it to the permanent ongoing story
+                        st.session_state.ongoing_story += "\n\n" + new_text
+                        st.rerun() # Rerun to display the newly fetched text
+            
+            full_text = st.session_state.story_text.get(scene_idx)
+            
+            if full_text == "GENERATION_FAILED":
+                st.error("Could not generate the story for this scene. Please try refreshing the page.")
+                return
 
-        st.markdown(
-            f"<div style='padding: 12px; background: #f9f9f9; border-left: 6px solid #999999'>{scene_text}</div>",
-            unsafe_allow_html=True
-        )
+        # --- UNIFIED DISPLAY, AUDIO, AND REFLECTION LOGIC ---
+        if full_text:
+            # Display text paragraph-by-paragraph for ALL scenes
+            all_paras_shown = display_paragraph_by_paragraph(scene_idx, full_text)
 
-        # TTS audio
-        if i not in st.session_state.generated_audio and scene_text:
-            st.session_state.generated_audio[i] = generate_tts_audio(scene_text)
+            # Once all paragraphs of a scene are shown, show audio and reflection questions
+            if all_paras_shown:
+                # with st.spinner("Preparing audio..."):
+                #     if scene_idx not in st.session_state.generated_audio:
+                #         st.session_state.generated_audio[scene_idx] = generate_tts_audio(full_text)
+                #     if st.session_state.generated_audio[scene_idx]:
+                #         st.audio(st.session_state.generated_audio[scene_idx], format="audio/mp3")
 
-        if st.session_state.generated_audio.get(i):
-            st.audio(st.session_state.generated_audio[i], format="audio/mp3")
+                st.subheader("Reflection")
+                if is_neutral_scene:
+                    r = st.text_area(neutral_question, key=f"reflect_{scene_idx}")
+                    st.session_state.reflections[f"reflect_{scene_idx}"] = r
+                else:
+                    q1, q2 = static_reflective_questions[scene_idx]
+                    r1 = st.text_area(q1, key=f"reflect_{scene_idx}_q1")
+                    r2 = st.text_area(q2, key=f"reflect_{scene_idx}_q2")
+                    st.session_state.reflections[f"reflect_{scene_idx}_q1"] = r1
+                    st.session_state.reflections[f"reflect_{scene_idx}_q2"] = r2
+        
+        # --- NAVIGATION ---
+        st.divider()
+        if st.button("Next Scene ➡️", key=f"next_scene_{scene_idx}"):
+            if scene_idx < 6:
+                st.session_state.current_scene += 1
+                st.rerun()
+            else:
+                go_to_next_page()
 
-        # Reflections
-        if i % 2 == 1:
-            r = st.text_area(neutral_question, key=f"reflect_{i}_fixed")
-            st.session_state.reflections[f"reflect_{i}_fixed"] = r
-        else:
-            q1, q2 = static_reflective_questions[i]
-            r1 = st.text_area(q1, key=f"reflect_{i}_q1")
-            r2 = st.text_area(q2, key=f"reflect_{i}_q2")
-            st.session_state.reflections[f"reflect_{i}_q1"] = r1
-            st.session_state.reflections[f"reflect_{i}_q2"] = r2
-
-        st.markdown("---")
-
-    # Final reflection
-    if all(st.session_state.story_text.get(i) for i in [2, 4, 6]):
-        st.subheader("🪞 Final Reflection")
-        r1 = st.text_area("Did the character's experiences bring up any thoughts or feelings of your own?", key="final_reflect_1")
-        r2 = st.text_area("Was there anything in the scenes that felt familiar? What was that?", key="final_reflect_2")
-        st.session_state.reflections["final_reflect_1"] = r1
-        st.session_state.reflections["final_reflect_2"] = r2
-
-        if st.button("Next ➡️"):
-            st.session_state.page = "final_feedback"
-            st.rerun()
+    # Initial call remains the same
+    show_scene(st.session_state.current_scene)
