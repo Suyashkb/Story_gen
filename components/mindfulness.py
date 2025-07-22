@@ -18,7 +18,7 @@ def render(go_to_next_page):
                 st.rerun()
         else:
             elapsed = time.time() - st.session_state.eyes_closed_timer_start
-            remaining = int(3 - elapsed)
+            remaining = int(30 - elapsed)
 
             if remaining > 0:
                 st.write(f"⏳ Time left: **{remaining} seconds**")
@@ -50,7 +50,7 @@ def render(go_to_next_page):
         else:
             st.markdown("<h1 style='text-align: center; font-size: 100px;'>+</h1>", unsafe_allow_html=True)
             elapsed = time.time() - st.session_state.fixation_cross_timer_start
-            remaining = int(3 - elapsed)
+            remaining = int(30 - elapsed)
 
             if remaining > 0:
                 #st.write(f"⏳ Time left: **{remaining} seconds**")
@@ -77,7 +77,7 @@ def render(go_to_next_page):
                 st.rerun()
         else:
             elapsed_time = time.time() - st.session_state.dot_activity_timer_start
-            remaining = int(3 - elapsed_time)
+            remaining = int(30 - elapsed_time)
             st.write(f"⏳ Time left: **{remaining} seconds**")
 
             # Initialize dot properties if they don't exist
