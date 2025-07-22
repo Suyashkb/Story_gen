@@ -30,7 +30,7 @@ def render(go_to_next_page):
     positive_scoring = {"A": 1, "B": 2, "C": 3, "D": 4, "E": 5}
     negative_scoring = {"A": 5, "B": 4, "C": 3, "D": 2, "E": 1}
 
-    # --- UPDATED: New scoring groups for 26 questions ---
+    
     scoring_groups = {
         "Self-Kindness":      ["Q5", "Q12", "Q19", "Q23", "Q26"],
         "Self-Judgment":      ["Q1", "Q8", "Q11", "Q16", "Q21"],
@@ -40,7 +40,7 @@ def render(go_to_next_page):
         "Overidentification": ["Q2", "Q6", "Q20", "Q24"]
     }
 
-    # --- UPDATED: New list of 26 questions ---
+    
     questions = {
         "Q1": "I’m disapproving and judgmental about my own flaws and inadequacies.",
         "Q2": "When I’m feeling down I tend to obsess and fixate on everything that’s wrong.",

@@ -1,60 +1,127 @@
 import streamlit as st
 import time
+import random
 
 def render(go_to_next_page):
-    st.title("Mindfulness Activity")
-
-    if "mindfulness_stage" not in st.session_state:
-        st.session_state.mindfulness_stage = "intro"
-
-    # Stage 1: Eyes closed
-    if st.session_state.mindfulness_stage == "intro":
-        st.markdown("## Get ready for the mindfulness session.")
+    # Initialize the main stage controller if it doesn't exist
+    if "activity_stage" not in st.session_state:
+        st.session_state.activity_stage = "eyes_closed"
         
-        _ , mid, _ = st.columns([2, 1, 2])
-        
-        with mid:
-            if st.button("Start"):
-                st.session_state.mindfulness_stage = "eyes_closed"
+    if st.session_state.activity_stage == "eyes_closed":
+        st.subheader("Activity 1: Eyes Closed")
+        st.write("Focus on your breath and stay still for 60 seconds. A gentle sound will indicate the end.")
+
+        if "eyes_closed_started" not in st.session_state:
+            if st.button("Begin Eyes Closed Activity"):
+                st.session_state.eyes_closed_started = True
+                st.session_state.eyes_closed_timer_start = time.time()
                 st.rerun()
-                go_to_next_page()
+        else:
+            elapsed = time.time() - st.session_state.eyes_closed_timer_start
+            remaining = int(30 - elapsed)
+
+            if remaining > 0:
+                st.write(f"⏳ Time left: **{remaining} seconds**")
+                time.sleep(1) # This creates the 1-second refresh loop
+                st.rerun()
+            else:
+                st.success("✅ Eyes Closed activity complete!")
+                # Sound will be blocked by browsers, but st.audio provides a manual player
+                #st.audio("https://actions.google.com/sounds/v1/alarms/beep_short.ogg", autoplay=True)
                 
-    elif st.session_state.mindfulness_stage == "eyes_closed":
-        st.markdown("### Close your eyes and relax for 30 seconds...")
-        with st.empty():
-            time.sleep(30)
-        st.session_state.mindfulness_stage = "eyes_open"
-        st.rerun()
+                st.markdown(
+                    """
+                    <audio autoplay>
+                        <source src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg" type="audio/ogg">
+                    </audio>
+                    """, unsafe_allow_html=True
+                )
+                # This button now transitions to the NEW fixation cross stage
+                if st.button("Continue to Fixation Cross"):
+                    st.session_state.activity_stage = "fixation_cross"
+                    # Clean up old state variables before moving on
+                    del st.session_state.eyes_closed_started
+                    del st.session_state.eyes_closed_timer_start
+                    st.rerun()
 
-    # Stage 2: Eyes open with fixation cross
-    elif st.session_state.mindfulness_stage == "eyes_open":
-        st.markdown("### Open your eyes and focus on the '+' sign for 30 seconds.")
-        st.markdown("<h1 style='text-align: center; font-size: 100px;'>+</h1>", unsafe_allow_html=True)
-        time.sleep(30)
-        st.session_state.mindfulness_stage = "dot_activity"
-        st.rerun()
 
-    # Stage 3: Ball moving (your existing dot activity)
-    elif st.session_state.mindfulness_stage == "dot_activity":
-        st.markdown("### Follow the moving ball on the screen for 30 seconds.")
+    elif st.session_state.activity_stage == "fixation_cross":
+        st.subheader("Activity 2: Fixation Cross")
+        st.write("Please open your eyes and focus on the '+' sign for 30 seconds.")
 
-        # Simple placeholder animation using markdown
-        placeholder = st.empty()
-        cols = 5
+        if "fixation_cross_started" not in st.session_state:
+            if st.button("Begin Fixation Cross Activity"):
+                st.session_state.fixation_cross_started = True
+                st.session_state.fixation_cross_timer_start = time.time()
+                st.rerun()
+        else:
+            st.markdown("<h1 style='text-align: center; font-size: 100px;'>+</h1>", unsafe_allow_html=True)
+            elapsed = time.time() - st.session_state.fixation_cross_timer_start
+            remaining = int(30 - elapsed)
 
-        for i in range(10):
-            position = i % cols
-            line = ["&nbsp;"] * cols
-            line[position] = "🔴"
-            placeholder.markdown("<pre style='font-size:30px; text-align:center'>" + "".join(line) + "</pre>", unsafe_allow_html=True)
-            time.sleep(30)
+            if remaining > 0:
+                #st.write(f"⏳ Time left: **{remaining} seconds**")
+                time.sleep(1)
+                st.rerun()
+            else:
+                st.success("✅ Fixation Cross activity complete!")
+                if st.button("Continue to Dot Activity"):
+                    st.session_state.activity_stage = "dot_activity"
+                    # Clean up old state variables
+                    del st.session_state.fixation_cross_started
+                    del st.session_state.fixation_cross_timer_start
+                    st.rerun()
+                    
+                    
+    elif st.session_state.activity_stage == "dot_activity":
+        st.subheader("Activity 3: Dot Activity")
+        st.write("Follow the dot with your eyes and **click it when it turns red.**")
 
-        st.session_state.mindfulness_stage = "done"
-        st.rerun()
+        if "dot_activity_started" not in st.session_state:
+            if st.button("Start Dot Activity"):
+                st.session_state.dot_activity_started = True
+                st.session_state.dot_activity_timer_start = time.time()
+                st.rerun()
+        else:
+            elapsed_time = time.time() - st.session_state.dot_activity_timer_start
+            remaining = int(30 - elapsed_time)
+            st.write(f"⏳ Time left: **{remaining} seconds**")
 
-    # Completion
-    elif st.session_state.mindfulness_stage == "done":
-        st.success("Mindfulness session complete!")
-        if st.button("Continue"):
-            go_to_next_page()
-            st.rerun()
+            # Initialize dot properties if they don't exist
+            if "dot_color" not in st.session_state:
+                st.session_state.dot_color = "blue"
+                st.session_state.dot_x = random.randint(10, 90)
+                st.session_state.dot_y = random.randint(20, 80) # Adjusted Y to be less likely to overlap text
+                st.session_state.dot_last_update = time.time()
+
+            # Update dot position and color periodically
+            if time.time() - st.session_state.dot_last_update > 1.5:
+                st.session_state.dot_color = random.choice(["blue", "red"])
+                st.session_state.dot_x = random.randint(10, 90)
+                st.session_state.dot_y = random.randint(20, 80)
+                st.session_state.dot_last_update = time.time()
+
+            dot_html = f"""
+            <div style="position: relative; height: 300px; border: 1px solid #ddd; border-radius: 5px;">
+                <span style="
+                    position: absolute;
+                    left: {st.session_state.dot_x}%;
+                    top: {st.session_state.dot_y}%;
+                    width: 30px;
+                    height: 30px;
+                    background-color: {st.session_state.dot_color};
+                    border-radius: 50%;
+                    transform: translate(-50%, -50%);
+                "></span>
+            </div>
+            """
+            st.markdown(dot_html, unsafe_allow_html=True)
+
+            if remaining > 0:
+                time.sleep(1)
+                st.rerun()
+            else:
+                st.success("✅ Dot activity complete!")
+                if st.button("Proceed to Quiz"):
+                    go_to_next_page()
+                    st.rerun()

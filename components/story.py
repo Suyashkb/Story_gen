@@ -84,7 +84,7 @@ def render(go_to_next_page):
     }
 
     def get_kindness_story(score):
-        if score <= 7:
+        if score <= 17:
             return """Ananya stood frozen in front of the mirror in her cramped hostel room near her college. The ceiling fan creaked overhead, but her thoughts were louder, harsher. She stared at her reflection with disgust; the acne scars she couldn’t hide, the dark circles under her eyes from another night of cramming, and worst of all, the memory of how she’d snapped at her chemistry teacher.
             “You’re such a mess,” she whispered. “No wonder people lose patience with you. You can’t even control your tone.”
             She scanned her face again. The imperfections screamed back at her. “You look tired. You look like someone who tries hard and still fails. Maybe you are a failure.”
@@ -96,7 +96,7 @@ def render(go_to_next_page):
             That night, she found herself in front of the mirror again. The silence wasn’t peaceful. It was suffocating. Her eyes hunted for flaws; and found them easily. Her jaw clenched. Her shoulders tensed. She didn’t offer herself compassion. Not even neutrality. Just a brutal inventory of everything wrong.But she paused, just for a moment. Not because she felt better, but because she was too exhausted to continue hating herself.
             It wasn’t healing. It wasn’t growing. Just a pause. A breath before the next wave. But even that breath was something.
             """
-        elif score in [8, 10]:
+        elif score in [18, 25]:
             return """Rishi’s project idea was rejected from his first hackathon. He didn’t throw anything or cry. He just shut his laptop with a dull thud and muttered, “Of course it wasn’t good enough. Why did I even think it had a chance?”
             He slumped back on his bed, letting the disappointment tighten in his chest like a knot. As he aimlessly flipped through his rough notes, his eyes caught a scribble in the margin: “Even the Himalayas weren’t built in a day.”
             It was his handwriting — overly hopeful, overly naive. He rolled his eyes. “Wow, you really thought writing cheesy lines would make you capable?”
@@ -107,7 +107,7 @@ def render(go_to_next_page):
             The failure still stung. And he still believed it reflected something about him. But for tonight, at least, he let the judgment go quiet. Not out of kindness — just surrender.
             It wasn't a relief. But it was a pause.
             """
-        elif score in [11, 14]:
+        elif score in [26, 33]:
             return """Megha had always walked a fine line with her emotions, like a tightrope she couldn’t quite step off. Preparing for the CAT exams tested her more than school ever had. After every silly mistake, she’d sigh and mutter, “You should’ve seen that coming,” or “You’re falling behind again.”
             Her coaching centre buzzed with competition. Everyone seemed to know more, solve faster, and stress less. One day, after stumbling through a mock test, Megha slipped into the restroom and let a few quiet tears fall. “You’ve got to toughen up,” she told herself, but the words didn’t hit as hard as they used to.
             That night, wrapped in her blanket with a worn copy of One Indian Girl, she reread a line she’d underlined months ago: “This is how your mind plays games with you...” It didn’t fix things, but it made her pause. Maybe not every thought was true.
@@ -116,7 +116,7 @@ def render(go_to_next_page):
             The inner critic hadn’t vanished. But it no longer shouted alone. A quieter voice had begun to speak — not always, not loudly, but enough to be heard.
             And together, they were learning balance.
             """
-        elif score in [15, 17]:
+        elif score in [34, 41]:
             return """Aarav had just returned from Sarojini Nagar, his bag stuffed with joyful bargains- a denim jacket for ₹250 and drawing notebooks for his sister. He was humming a Shah Rukh Khan tune when he spotted the disaster: biryani spilled across his handwritten exam notes.
             He froze. But only for a second. Then he smiled wryly and said aloud, “Well, that’s one way to add flavor to studying.”
             He gently cleaned up the mess, reminding himself, “It’s okay. These are just notes. My learning isn’t ruined — it’s just taking a little detour.” He reopened his laptop. Most of the material could be re-downloaded. What couldn’t, he’d rework patiently.
@@ -143,7 +143,7 @@ def render(go_to_next_page):
             And being human, Tanya now knew, was a story worth showing up for; even when the scene wasn’t perfect.
             """
     def get_humanity_story(score):
-        if score <= 7:
+        if score <= 14:
             return """Riya sat cross-legged on her bed, her sketchpad untouched beside her. She had flunked an important college assignment. Outside, the world seemed to spin without her- Instagram stories of friends laughing in Sarojini Nagar, café boomerangs, reels celebrating ‘productive Sundays’. But in her room, the silence pressed in.
             “Why is it always me?” she whispered, voice cracking. “Why can’t I just get it right for once?”
             She didn’t message anyone. What was the point? No one would understand. Everyone else seemed to be thriving- submitting assignments on time, acing tests, smiling without faking it. She felt like the only one constantly falling short, the only one too weak to keep up.
@@ -152,7 +152,7 @@ def render(go_to_next_page):
             Her chest felt tight, her mind louder than ever. The thought of explaining herself felt exhausting. She wasn’t ready to talk. Maybe she refuses to accept that failure was a common experience - “a part and parcel of life”.
             As she shut her sketchpad, she tried to remember a quote — something about not giving up. She pulled the blanket over her head, swallowed the lump in her throat, and told herself, “No one gets it. Not really.”
             """
-        elif score in [8, 10]:
+        elif score in [15, 20]:
             return """Arjun sat in his coaching class, watching others nod along with ease as the teacher explained financial ratios. Their pens moved confidently; their faces looked calm. His mind, however, was elsewhere — stuck on the rejection email he’d received that morning. Another door closed. Another silent “no.”
             He had really wanted that summer internship at that MNC. Maybe too much. Now, he wondered if he was just not cut out for this path.
             During the break, he crossed paths with Priya, a quiet girl from the back row. She gave a half-smile and said, “Didn’t get the startup one either. Just wanted to disappear for a bit.”
@@ -163,7 +163,7 @@ def render(go_to_next_page):
             He still felt left out. And the feeling wasn’t going away. Everyone else seemed to be building, moving, rising.
             Arjun stared at the steam rising from his cup. Alone in the noise of the street, he mumbled, “But then Priya also didn’t make it. Maybe next time we get lucky.”
             """
-        elif score in [11,14]:
+        elif score in [21,27]:
             return """Meera clutched her guitar a little tighter as she stepped into her music studio . The last few compositions she’d made went flat during performance. She hadn’t told anyone, but it stung; music was supposed to bring her peace, not feel like another thing she was failing at.
             As the class began, she stayed quiet, unsure whether she belonged here at all. Her fingers moved stiffly over the guitar strings, her mind replaying the fractures in her work and wondering if maybe she just wasn’t made for this.
             Midway through, their teacher, an older artist with blistered fingers,  paused to share a story. “My first ten compositions,” he laughed, “were a flop. I still listen to them. They remind me where I started.”
@@ -175,7 +175,7 @@ def render(go_to_next_page):
             As she scrolled through a post about ISRO’s early failed lunar missions, she smiled faintly. Even the sky doesn't always cooperate.
             Maybe failures were a part of the journey. Maybe everyone, somewhere, was mending something.
             """
-        elif score in [15, 17]:
+        elif score in [28, 33]:
             return """Nikhil stood frozen in front of the projector screen, mid-pitch. He had rehearsed for weeks, memorizing every transition, polishing every slide. But one forgotten line led to a stammer, and then a blank. The rest of the pitch felt like he was wading through fog.
             The meeting ended with polite nods and a thank-you. But inside, Nikhil felt a sting of disappointment; not crushing, but familiar.
             Later, at a café near Hauz Khas, his mentor stirred her cold coffee and offered a soft smile. “You know Amitabh Bachchan was rejected in his first voice test, and his first eleven films didn’t work out?” she said. “And now we all quote him like scripture.”
@@ -215,7 +215,7 @@ def render(go_to_next_page):
             """
 
     def get_mindfulness_story(score):
-        if score <= 7:
+        if score <= 14:
             return """Tanishq had poured everything he had into a business idea, an eco-friendly courier bag made of starch. He believed in it, saw its potential. But at the investor pitch in Mumbai, the judges didn’t share his vision.
             “Too idealistic,” one of them said, barely glancing up. Another scrolled through his phone, uninterested.
             That night, Tanishq couldn’t sleep. His thoughts circled endlessly:
@@ -230,7 +230,7 @@ def render(go_to_next_page):
             Maybe the failure wasn’t the whole truth. Maybe it was just a part of the story.
             And maybe, with time, he could learn to see it that way.
             """
-        elif score in [8, 10]:
+        elif score in [15, 20]:
             return """Ananya loved doodling mandalas and had recently applied for a design fellowship run by a Delhi-based NGO. When she didn’t get selected, she shrugged in front of her mother, saying, “It’s okay, I didn’t expect much anyway.”
             But that evening, she sat frozen in front of her sketchpad, pencil untouched. Her mind didn’t just replay the rejection; it dragged out every past mistake like a playlist on loop. The school award she didn’t win. The Durga poster her teacher said looked “unfinished.” That one spelling bee in Class 4 where she misspelled “journey.”
             “Maybe I never had it,” she thought. “Maybe I’ve just been pretending all along.”
@@ -243,7 +243,7 @@ def render(go_to_next_page):
             It wasn’t healing — not yet. But maybe, just maybe, it was the first breath toward it.
             A tiny diya in the dark, reminding her: feelings aren’t facts. They’re just passing weather.
             """
-        elif score in [11,14]:
+        elif score in [21,27]:
             return """Dev was the kind of person who prepared thoroughly; detailed slides, timed delivery, practiced hand gestures. So when his marketing pitch at the college fest was met with blank stares and awkward silence, he walked out calmly, holding his expression steady.
             But inside, frustration boiled.
             “You should’ve done better.”
@@ -256,7 +256,7 @@ def render(go_to_next_page):
             And maybe, just maybe, he could learn to let hard moments pass without letting them rewrite his entire script.
             Balance, he thought, isn’t the absence of pain. It’s the ability to pause before the spiral.
             """
-        elif score in [15, 17]:
+        elif score in [28, 33]:
             return """Sana had worked for a month on a proposal for a pottery residency in Pondicherry. When she saw the rejection email, she blinked once, twice then gently closed the laptop.
             She exhaled slowly and said to herself, “This stings. And that’s okay.”
             Then she walked into the kitchen, made herself some nimbu-paani, and settled on the balcony. She didn’t distract herself. She didn’t deny the disappointment. Instead, she let the emotions move through her, like a slow, passing monsoon drizzle.
@@ -481,6 +481,7 @@ def render(go_to_next_page):
                 st.rerun()
             else:
                 go_to_next_page()
+                st.rerun()
 
     # Initial call remains the same
     show_scene(st.session_state.current_scene)
