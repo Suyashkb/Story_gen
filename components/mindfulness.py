@@ -9,7 +9,7 @@ def render(go_to_next_page):
         
     if st.session_state.activity_stage == "eyes_closed":
         st.subheader("Activity 1: Eyes Closed")
-        st.write("Focus on your breath and stay still for 60 seconds. A gentle sound will indicate the end.")
+        st.write("Focus on your breath and stay still for 30 seconds. A gentle sound will indicate the end. Press the button below to start.")
 
         if "eyes_closed_started" not in st.session_state:
             if st.button("Begin Eyes Closed Activity"):
@@ -18,7 +18,7 @@ def render(go_to_next_page):
                 st.rerun()
         else:
             elapsed = time.time() - st.session_state.eyes_closed_timer_start
-            remaining = int(30 - elapsed)
+            remaining = int(3 - elapsed)
 
             if remaining > 0:
                 st.write(f"⏳ Time left: **{remaining} seconds**")
@@ -27,17 +27,10 @@ def render(go_to_next_page):
             else:
                 st.success("✅ Eyes Closed activity complete!")
                 # Sound will be blocked by browsers, but st.audio provides a manual player
-                #st.audio("https://actions.google.com/sounds/v1/alarms/beep_short.ogg", autoplay=True)
+                st.audio("https://actions.google.com/sounds/v1/alarms/beep_short.ogg", autoplay=True)
                 
-                st.markdown(
-                    """
-                    <audio autoplay>
-                        <source src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg" type="audio/ogg">
-                    </audio>
-                    """, unsafe_allow_html=True
-                )
-                # This button now transitions to the NEW fixation cross stage
-                if st.button("Continue to Fixation Cross"):
+            
+                if st.button("Continue to next activity"):
                     st.session_state.activity_stage = "fixation_cross"
                     # Clean up old state variables before moving on
                     del st.session_state.eyes_closed_started
@@ -47,7 +40,7 @@ def render(go_to_next_page):
 
     elif st.session_state.activity_stage == "fixation_cross":
         st.subheader("Activity 2: Fixation Cross")
-        st.write("Please open your eyes and focus on the '+' sign for 30 seconds.")
+        st.write("Now please focus on the '+' sign for 30 seconds.")
 
         if "fixation_cross_started" not in st.session_state:
             if st.button("Begin Fixation Cross Activity"):
@@ -57,7 +50,7 @@ def render(go_to_next_page):
         else:
             st.markdown("<h1 style='text-align: center; font-size: 100px;'>+</h1>", unsafe_allow_html=True)
             elapsed = time.time() - st.session_state.fixation_cross_timer_start
-            remaining = int(30 - elapsed)
+            remaining = int(3 - elapsed)
 
             if remaining > 0:
                 #st.write(f"⏳ Time left: **{remaining} seconds**")
@@ -84,7 +77,7 @@ def render(go_to_next_page):
                 st.rerun()
         else:
             elapsed_time = time.time() - st.session_state.dot_activity_timer_start
-            remaining = int(30 - elapsed_time)
+            remaining = int(3 - elapsed_time)
             st.write(f"⏳ Time left: **{remaining} seconds**")
 
             # Initialize dot properties if they don't exist
@@ -122,6 +115,6 @@ def render(go_to_next_page):
                 st.rerun()
             else:
                 st.success("✅ Dot activity complete!")
-                if st.button("Proceed to Quiz"):
+                if st.button("Proceed to Stories"):
                     go_to_next_page()
                     st.rerun()
