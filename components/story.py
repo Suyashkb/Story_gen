@@ -258,8 +258,8 @@ def generate_story_text(scene_idx, ongoing_story, _pdata,primary_theme_map):
         
         # This prompt is based on your original, successful Gemma prompt
         prompt = f"""
-        You are a gentle, skilled writer who connects emotional narratives. Write a scene for the character {_pdata['name']} (age {_pdata['age']}), a {_pdata['profession']}.
-
+        You are a gentle, skilled writer who connects emotional narratives. Write a scene for the character {_pdata['name']} (age {_pdata['age']}), a {_pdata['profession']},the first person they reach out to {_pdata['first_person']}
+        Other than the main character, use the name of the provided first person they reach out to in their difficult times and refer to all more characters in third person (do not specify more names).
         try to subtly integrate the following context about the character's state of mind and background, these are the responses to their question :
         -  Is there anything on your mind right now ? '{_pdata['emotion']}'
         - Perspective on family expectations: '{_pdata['family_oriented']}'
@@ -284,6 +284,7 @@ def generate_story_text(scene_idx, ongoing_story, _pdata,primary_theme_map):
         5.  Do not repeat the base template or the ongoing story verbatim. Adapt and evolve the narrative.
         6.  The response must be **only the raw story text**. Do not include any titles, headings, or introductions like "Here is the scene...".
         7.  Try to include monologues or internal dialogues that reflect the character's emotional state and growth.
+        8. Use the vocabulary of a middle school child (easy to understand and simple words)
         """
         
         try:
