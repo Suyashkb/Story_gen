@@ -258,7 +258,7 @@ def generate_story_text(scene_idx, ongoing_story, _pdata,primary_theme_map):
         
         # This prompt is based on your original, successful Gemma prompt
         prompt = f"""
-        You are a gentle, skilled writer who connects emotional narratives. Write a scene for the character {_pdata['name']} (age {_pdata['age']}), a {_pdata['profession']},the first person they reach out to {_pdata['first_person']}
+        You are a gentle, skilled writer who connects emotional narratives. Write a scene for the character {_pdata['name']} (age {_pdata['age']}),(gender {_pdata['gender']}, a {_pdata['profession']},the first person they reach out to {_pdata['first_person']}
         Other than the main character, use the name of the provided first person they reach out to in their difficult times and refer to all more characters in third person (do not specify more names).
         try to subtly integrate the following context about the character's state of mind and background, these are the responses to their question :
         -  Is there anything on your mind right now ? '{_pdata['emotion']}'
@@ -304,6 +304,7 @@ def generate_kinder_monologue_text(previous_scene_text, theme_name, _pdata):
 
         Character Details:
         - Name: {_pdata['name']}
+        - Gender: {_pdata['gender']}
         - Background: A {_pdata['profession']} feeling '{_pdata['emotion']}'.
 
         The theme to address is: **{theme_name}**
