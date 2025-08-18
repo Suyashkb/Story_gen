@@ -88,7 +88,7 @@ def render(go_to_next_page):
         else:
             # Check the main timer for the whole activity
             elapsed = time.time() - st.session_state.dot_activity_timer_start
-            TOTAL_DURATION = 30  # Set a total duration for the activity
+            TOTAL_DURATION = 3  # Set a total duration for the activity
 
             # This is the DURING phase (timer is still running)
             if elapsed < TOTAL_DURATION:
@@ -97,7 +97,7 @@ def render(go_to_next_page):
 
                 # --- Dot Animation Logic ---
                 horizontal_steps = [10, 30, 50, 70, 90]
-                SWEEP_DURATION_SECONDS = 5.0
+                SWEEP_DURATION_SECONDS = 3.0
                 current_time = time.time()
 
                 if "sweep_start_time" not in st.session_state:

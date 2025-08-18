@@ -334,36 +334,36 @@ def initialize_story_flow(scores):
     if 'scene_map' in st.session_state:
         return
 
+    # Add a view_mode to control showing story vs. questions
+    st.session_state.view_mode = 'story' 
+    
     KINDER_MONOLOGUE_THRESHOLD = 22
     st.session_state.scene_map = []
     
-    # Scene 1 & 2
+    # (The rest of your original logic is fine)
     st.session_state.scene_map.append({'number': 1, 'type': 'neutral'})
     st.session_state.scene_map.append({'number': 2, 'type': 'compassion'})
     if scores.get("Self-Kindness vs Self-Judgment", 99) < KINDER_MONOLOGUE_THRESHOLD:
         st.session_state.scene_map.append({'number': 3, 'type': 'kinder'})
         
-    # Scene 4 & 5
     st.session_state.scene_map.append({'number': 4, 'type': 'neutral'})
     st.session_state.scene_map.append({'number': 5, 'type': 'compassion'})
     if scores.get("Common Humanity vs Isolation", 99) < (KINDER_MONOLOGUE_THRESHOLD-5):
         st.session_state.scene_map.append({'number': 6, 'type': 'kinder'})
 
-    # Scene 7 & 8
-    st.session_state.scene_map.append({'number': 7, 'type': 'neutral'}) # Assuming scene 7 exists in your neutral dict
+    st.session_state.scene_map.append({'number': 7, 'type': 'neutral'})
     st.session_state.scene_map.append({'number': 8, 'type': 'compassion'})
     if scores.get("Mindfulness vs Overidentification", 99) < (KINDER_MONOLOGUE_THRESHOLD-5):
         st.session_state.scene_map.append({'number': 9, 'type': 'kinder'})
 
-    # Initialize other state variables
     st.session_state.total_scenes = len(st.session_state.scene_map)
     st.session_state.current_scene_index = 0
     st.session_state.story_text = {}
     st.session_state.ongoing_story = ""
     st.session_state.reflections = {}
     st.session_state.scene_paragraph_idx = {}
-    st.session_state.appended_scenes = set() # For robust story tracking
-
+    st.session_state.appended_scenes = set()
+    
 # --- UI Display Functions ---
 def display_paragraph_by_paragraph(scene_number, full_text):
     paras = [p.strip() for p in full_text.split("\n") if p.strip()]
@@ -384,7 +384,36 @@ def display_paragraph_by_paragraph(scene_number, full_text):
         return False
     return True
 
-def show_current_scene(pdata, primary_theme_map, neutral_scenes, neutral_question, static_reflective_questions, go_to_next_page):
+def generate_dynamic_fourth_question(theme_name, score):
+    """Generates a targeted reflection question based on theme and user score."""
+    
+    # --- This is where you define your logic for the fourth question ---
+    # You can make this as complex as you need.
+    
+    if theme_name == "Self-Kindness vs Self-Judgment":
+        if score < 18: # Example threshold for low score
+            return "The character was quite hard on themselves. What's one gentle or kind thought they could have offered themselves in that moment?"
+        else: # Example for high score
+            return "The character found a way to be kind to themselves. What helps you access your own kinder inner voice when you're struggling?"
+            
+    elif theme_name == "Common Humanity vs Isolation":
+        if score < 18:
+            return "Feeling isolated is a tough experience, as the character showed. What's a small reminder you can use to remember that everyone struggles at times?"
+        else:
+            return "The character started to realize they weren't alone. How does connecting with others, even in small ways, affect your own perspective?"
+
+    elif theme_name == "Mindfulness vs Overidentification":
+        if score < 18:
+            return "The character was completely swept away by their difficult thoughts. What's one physical sensation you can focus on right now (like your feet on the floor) to ground yourself?"
+        else:
+            return "The character managed to observe their thoughts without getting lost in them. What does the idea of 'thoughts are not facts' mean to you?"
+    
+    return "What is one key message or feeling you are taking away from this scene?" # Fallback question
+
+def display_story_scene(pdata, primary_theme_map, neutral_scenes):
+    """
+    Handles the generation and paragraph-by-paragraph display of the story scene.
+    """
     scene_index = st.session_state.current_scene_index
     scene_info = st.session_state.scene_map[scene_index]
     scene_number = scene_info['number']
@@ -393,9 +422,8 @@ def show_current_scene(pdata, primary_theme_map, neutral_scenes, neutral_questio
     st.header(f"Scene {scene_index + 1} / {st.session_state.total_scenes}")
     st.divider()
 
+    # --- Text Generation and Retrieval ---
     full_text = None
-
-    # --- Text Generation and Retrieval (no changes here) ---
     if scene_type == 'neutral':
         full_text = neutral_scenes.get(scene_number, "Neutral scene text not found.")
     else: 
@@ -407,11 +435,8 @@ def show_current_scene(pdata, primary_theme_map, neutral_scenes, neutral_questio
                 elif scene_type == 'kinder':
                     prev_compassion_scene_num = scene_number - 1
                     prev_text = st.session_state.story_text.get(prev_compassion_scene_num)
-                    if prev_text and prev_text != "GENERATION_FAILED":
-                        theme_name, _ = primary_theme_map[prev_compassion_scene_num]
-                        new_text = generate_kinder_monologue_text(prev_text, theme_name, pdata)
-                    else:
-                        new_text = "GENERATION_FAILED"
+                    theme_name, _ = primary_theme_map[prev_compassion_scene_num]
+                    new_text = generate_kinder_monologue_text(prev_text, theme_name, pdata)
                 
                 st.session_state.story_text[scene_number] = new_text or "GENERATION_FAILED"
                 st.rerun()
@@ -419,77 +444,103 @@ def show_current_scene(pdata, primary_theme_map, neutral_scenes, neutral_questio
         full_text = st.session_state.story_text.get(scene_number)
 
     if not full_text or full_text == "GENERATION_FAILED":
-        st.error("Could not display the story for this scene. Please try refreshing.")
+        st.error("Could not display the story. Please try refreshing.")
         return
 
-    # --- Appending to ongoing story (no changes here) ---
+    # --- Appending to ongoing story ---
     if scene_number not in st.session_state.appended_scenes:
         st.session_state.ongoing_story += "\n\n" + full_text
         st.session_state.appended_scenes.add(scene_number)
         
-    # Display story paragraphs and check if they are all shown
+    # Display story and check if all paragraphs are shown
     all_paras_shown = display_paragraph_by_paragraph(scene_number, full_text)
 
-    # ✅ CHANGE 1: The entire reflection and navigation logic is now wrapped 
-    # in this 'if' block. It will only execute after the last "Continue Reading ->"
-    # is clicked.
+    # If the last paragraph has been shown, display a button to move to reflections
     if all_paras_shown:
-        st.subheader("Reflection 🤔")
-        if scene_type == 'neutral':
-            r = st.text_area(neutral_question, key=f"reflect_{scene_number}")
-            st.session_state.reflections[f"reflect_{scene_number}"] = r
-        else:
-            q1, q2 = static_reflective_questions[scene_number]
-            r1 = st.text_area(q1, key=f"reflect_{scene_number}_q1")
-            r2 = st.text_area(q2, key=f"reflect_{scene_number}_q2")
-            st.session_state.reflections[f"reflect_{scene_number}_q1"] = r1
-            st.session_state.reflections[f"reflect_{scene_number}_q2"] = r2
-    
         st.divider()
+        if st.button("Proceed to Reflection 🤔", key=f"reflect_btn_{scene_number}"):
+            st.session_state.view_mode = 'reflection'
+            st.rerun()
 
-        # ✅ CHANGE 2: Implement the 5-second delay for the "Next Scene" button.
-        delay_seconds = 5
-        timer_key = f"reflection_timer_start_{scene_index}"
+def display_reflection_page(pdata, primary_theme_map, scores, go_to_next_page):
+    """
+    Handles displaying the dynamic reflection questions for the current scene.
+    """
+    scene_index = st.session_state.current_scene_index
+    scene_info = st.session_state.scene_map[scene_index]
+    scene_number = scene_info['number']
+    scene_type = scene_info['type']
 
-        # Initialize the timer the first time we show the reflection questions.
-        if timer_key not in st.session_state:
-            st.session_state[timer_key] = time.time()
+    st.header(f"Reflection for Scene {scene_index + 1}")
+    st.markdown("Take a moment to reflect on the scene you just read.")
+    st.divider()
 
-        elapsed = time.time() - st.session_state[timer_key]
+    # --- Q1: Relatedness ---
+    if scene_type in ['compassion', 'kinder']:
+        st.session_state.reflections[f"reflect_{scene_number}_relatedness"] = st.slider(
+            "**How much did you relate to the main character in this scene?**",
+            min_value=1, max_value=10, value=5,
+            help="1 = Not at all, 10 = Completely"
+        )
 
-        if elapsed < delay_seconds:
-            # While waiting, show a disabled button and a countdown message.
-            st.button("Next Scene ➡️", key=f"next_scene_btn_disabled_{scene_index}", disabled=True)
-            st.caption(f"Please take a moment to reflect. You can proceed in **{int(delay_seconds - elapsed)}** seconds.")
-            # Force the UI to update every second to show the countdown.
-            time.sleep(1)
+    # --- Q2: Valence ---
+    st.session_state.reflections[f"reflect_{scene_number}_valence"] = st.radio(
+        "**How pleasant or unpleasant did the scene make you feel?** (Valence)",
+        options=['Very Unpleasant', 'Unpleasant', 'Neutral', 'Pleasant', 'Very Pleasant'],
+        index=2, horizontal=True
+    )
+
+    # --- Q3: Arousal ---
+    st.session_state.reflections[f"reflect_{scene_number}_arousal"] = st.radio(
+        "**How much energy or calmness did you feel from the scene?** (Arousal)",
+        options=['Very Low Energy ', 'Low Energy', 'Neutral', 'High Energy', 'Very High Energy'],
+        index=2, horizontal=True
+    )
+
+    # --- Q4: Dynamic Question for Generated Scenes ---
+    if scene_type in ['compassion', 'kinder']:
+        theme_name, _ = primary_theme_map[scene_number]
+        # This maps the theme to the correct score name
+        score_key_map = { 
+            "Self-Kindness vs Self-Judgment": "Self-Kindness vs Self-Judgment",
+            "Common Humanity vs Isolation": "Common Humanity vs Isolation",
+            "Mindfulness vs Overidentification": "Mindfulness vs Overidentification"
+        }
+        score_key = score_key_map.get(theme_name)
+        user_score = scores.get(score_key, 50) # Default score if not found
+        
+        dynamic_question = generate_dynamic_fourth_question(theme_name, user_score)
+        st.session_state.reflections[f"reflect_{scene_number}_dynamic"] = st.text_area(
+            f"**{dynamic_question}**"
+        )
+    
+    st.divider()
+
+    # Button to move to the next scene
+    if st.button("Continue to Next Scene ➡️", key=f"next_scene_btn_{scene_index}"):
+        if scene_index < st.session_state.total_scenes - 1:
+            st.session_state.current_scene_index += 1
+            st.session_state.view_mode = 'story' # Switch back to story view for the next scene
             st.rerun()
         else:
-            # After 5 seconds, show the real, clickable button.
-            if st.button("Next Scene ➡️", key=f"next_scene_btn_{scene_index}"):
-                if scene_index < st.session_state.total_scenes - 1:
-                    st.session_state.current_scene_index += 1
-                    st.rerun()
-                else:
-                    st.success("You have completed the stories!")
-                    go_to_next_page()
-                    st.rerun()
+            st.success("🎉 You have completed your personalized narrative journey!")
+            # Optional: Add a small delay before navigating away
+            go_to_next_page()
+            st.rerun()
 
-# --- 3. MAIN RENDER FUNCTION ---
+
+# --- ✅ 4. MODIFIED MAIN RENDER FUNCTION ---
 def render(go_to_next_page):
-    # Guard clause
     if "sc_scores" not in st.session_state or "personal_data" not in st.session_state:
         st.warning("⚠️ Required data not found. Please start from the beginning.")
-        if st.button("Go to Start"):
-            st.session_state.page = "start"
-            st.rerun()
+        if st.button("Go to Start"): st.session_state.page = "start"; st.rerun()
         st.stop()
 
     st.title("📖 Your Personalized Narrative Journey")
 
-    # --- Get data from session state ---
     scores = st.session_state.sc_scores
     pdata = st.session_state.personal_data
+
 
     # --- Define Static Content for this page ---
     neutral_scenes = {
@@ -510,19 +561,19 @@ def render(go_to_next_page):
         The passengers stepped in calmly. As the doors closed, the train pulled away with a soft whine. The platform was still again, and the digital sign reset to show the schedule for the next train.
         """ 
         }
-    neutral_question = "Did this scene evoke any particular feelings or thoughts for you? If so, please share them below." # Add a likert in neutral question- 5- point likert low neutral and high 
+    # neutral_question = "Did this scene evoke any particular feelings or thoughts for you? If so, please share them below." # Add a likert in neutral question- 5- point likert low neutral and high 
     
-    # valence and arousal questions 
+    # # valence and arousal questions 
     
-    static_reflective_questions = {
-        2: ("How much do you relate to the main character? (On a scale of 1-10, with 10 being you relate completely)", "Do they deserve understanding or support? Why?"),
-        3: ("Notice the shift in the character's inner voice. How did that feel?", "Can you identify a 'critic' and a 'compassionate' voice in your own thoughts?"),
-        4: ("How much do you relate to the character in this scene?(On a scale of 1-10, with 10 being you relate completely)", "Do they deserve understanding or support? Why?"),
-        5: ("How much do you relate to the character in this scene?(On a scale of 1-10, with 10 being you relate completely)", "Do they deserve understanding or support? Why?"),
-        6: ("How does the new perspective change their view of others?", "What's a small way you could connect with someone tomorrow?"),
-        8: ("How much do you relate to the character in this scene?(On a scale of 1-10, with 10 being you relate completely)", "Do they deserve understanding or support? Why?"),
-        9: ("How did the character create distance from their overwhelming thoughts?", "What is one 'leaf' (a difficult thought) you could just watch float by?"),
-    }
+    # static_reflective_questions = {
+    #     2: ("How much do you relate to the main character? (On a scale of 1-10, with 10 being you relate completely)", "Do they deserve understanding or support? Why?"),
+    #     3: ("Notice the shift in the character's inner voice. How did that feel?", "Can you identify a 'critic' and a 'compassionate' voice in your own thoughts?"),
+    #     4: ("How much do you relate to the character in this scene?(On a scale of 1-10, with 10 being you relate completely)", "Do they deserve understanding or support? Why?"),
+    #     5: ("How much do you relate to the character in this scene?(On a scale of 1-10, with 10 being you relate completely)", "Do they deserve understanding or support? Why?"),
+    #     6: ("How does the new perspective change their view of others?", "What's a small way you could connect with someone tomorrow?"),
+    #     8: ("How much do you relate to the character in this scene?(On a scale of 1-10, with 10 being you relate completely)", "Do they deserve understanding or support? Why?"),
+    #     9: ("How did the character create distance from their overwhelming thoughts?", "What is one 'leaf' (a difficult thought) you could just watch float by?"),
+    # }
     # assymetry in all 3 bands 
     #Aw index 
     #Efforrt index 
@@ -539,5 +590,10 @@ def render(go_to_next_page):
     
     # --- Execute the story flow ---
     initialize_story_flow(scores)
-    show_current_scene(pdata, primary_theme_map, neutral_scenes, neutral_question, static_reflective_questions, go_to_next_page)
-    
+
+    # Use the view_mode state to decide what to show
+    if st.session_state.view_mode == 'story':
+        display_story_scene(pdata, primary_theme_map, neutral_scenes)
+    elif st.session_state.view_mode == 'reflection':
+        display_reflection_page(pdata, primary_theme_map, scores, go_to_next_page)
+
