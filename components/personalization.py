@@ -11,7 +11,7 @@ def render(go_to_next_page):
         profession = st.text_input("4. What are you currently doing in life?", placeholder="For example: A student ? working ? figuring things out ? somewhere in between?")
         university=st.text_input("5. What is your university or company name?")
         emotion = st.text_area("6. Is there anything on your mind right now ?",placeholder= "You can write about something you're thinking about, feeling, or dealing with - big or small, joyful or stressful. ")
-        first_person=st.text_input("6. Who is the first person you reach out to in difficult times?", placeholder="This could be a friend, family member, or anyone you trust.Also write your relationship with them.")
+        first_person=st.text_input("6. Who is the first person you reach out to in difficult times?", placeholder="This could be a friend, family member, or anyone you trust. Also write your relationship with them.")
         society = st.text_area("7. Do you find that values like working hard and staying strong make it harder to be gentle with yourself?", placeholder=" We want to understand if focusing on achievement or toughness sometime gets in the way of self-care for you ?")
         family_oriented=st.text_area("8. Do you feel that family expectations or traditions sometimes make it difficult to be kind to yourself ?", placeholder="Sometimes, what's expected at home can affect how we treat ourselves. Let us know if this is true for you.")
         institute_related=st.text_area("9. Are there any rules or ways of doing things in your college/institute that make it tricky to practice being kind to yourself?", placeholder="Sometimes, the way things are done can make self-kindness harder. Please share any experiences like this.")

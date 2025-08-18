@@ -2,7 +2,7 @@ import streamlit as st
 
 def render(go_to_next_page):
     st.set_page_config(page_title="Self-Compassion Quiz", layout="centered")
-    st.title("🧠 Self-Compassion Quiz")
+    st.title("Let's Reflect")
 
     st.markdown("""
     #### 📝 Before you begin:
@@ -118,10 +118,36 @@ def render(go_to_next_page):
     if quiz_submitted:
         if len(answers) == len(questions):
             st.session_state.quiz_answers = answers
-            st.session_state.sc_scores = calculate_self_compassion_scores(answers)
-
+            # Calculate and store the scores
+            scores = calculate_self_compassion_scores(answers)
+            st.session_state.sc_scores = scores
+            
+            # Display a success message
             st.success("✅ Quiz submitted successfully!")
+            
+            # --- DISPLAY SCORES ---
+            st.markdown("---")
+            st.subheader("Your Results")
+            st.markdown("A higher score indicates a stronger tendency towards the positive aspect of each pair (e.g., more Self-Kindness).")
+
+            # Define max scores for context
+            max_scores = {
+                "Self-Kindness vs Self-Judgment": 50, # 10 questions * 5 points
+                "Common Humanity vs Isolation": 40,   # 8 questions * 5 points
+                "Mindfulness vs Overidentification": 40 # 8 questions * 5 points
+            }
+
+            # Display each score with its maximum possible value
+            for section, score in scores.items():
+                max_score = max_scores[section]
+                st.markdown(f"**{section}:** `{score} / {max_score}`")
+            
+            st.markdown("---")
+            # --- END OF DISPLAY SCORES ---
+
+            # Display the continue button to proceed
             st.button("Continue", on_click=go_to_next_page)
 
         else:
+            # Show a warning if any question is unanswered
             st.warning("Please answer all 26 questions to continue.")

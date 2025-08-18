@@ -8,7 +8,7 @@ def render(go_to_next_page):
         st.session_state.activity_stage = "eyes_closed"
         
     if st.session_state.activity_stage == "eyes_closed":
-        st.subheader("Activity 1: Eyes Closed")
+        st.subheader("Activity 1")
         st.write("Focus on your breath and stay still for 30 seconds. A gentle sound will indicate the end. Press the button below to start.")
 
         if "eyes_closed_started" not in st.session_state:
@@ -18,7 +18,7 @@ def render(go_to_next_page):
                 st.rerun()
         else:
             elapsed = time.time() - st.session_state.eyes_closed_timer_start
-            remaining = int(30 - elapsed)
+            remaining = int(3 - elapsed)
 
             if remaining > 0:
                 st.write(f"⏳ Time left: **{remaining} seconds**")
@@ -39,29 +39,32 @@ def render(go_to_next_page):
 
 
     elif st.session_state.activity_stage == "fixation_cross":
-        st.subheader("Activity 2: Fixation Cross")
-        st.write("Now please focus on the '+' sign for 30 seconds.")
-
+    # This block runs BEFORE the activity starts
         if "fixation_cross_started" not in st.session_state:
+            st.subheader("Activity 2")
+            st.write("Now please focus on the '+' sign for 30 seconds. To begin the experiment press the button below.")
             if st.button("Begin Fixation Cross Activity"):
                 st.session_state.fixation_cross_started = True
                 st.session_state.fixation_cross_timer_start = time.time()
                 st.rerun()
+                
         else:
-           # Centered using a div with CSS flexbox
-            st.markdown("""
-                <div style='display: flex; justify-content: center; align-items: center; height: 60vh;'>
-                    <p style='text-align: center; font-size: 100px;'>+</p>
-                </div>
-            """, unsafe_allow_html=True)
-
             elapsed = time.time() - st.session_state.fixation_cross_timer_start
-            remaining = int(30 - elapsed)
-
-            if remaining > 0:
-                #st.write(f"⏳ Time left: **{remaining} seconds**")
+            
+            # This is the DURING phase (timer is still running)
+            if elapsed < 3:
+                # Display ONLY the fixation cross, centered on the page
+                st.markdown("""
+                    <div style='display: flex; justify-content: center; align-items: center; height: 70vh;'>
+                        <p style='text-align: center; font-size: 100px;'>+</p>
+                    </div>
+                """, unsafe_allow_html=True)
+                
+                # This loop forces a rerun every second to check the timer
                 time.sleep(1)
                 st.rerun()
+
+            # This is the AFTER phase (timer has finished)
             else:
                 st.success("✅ Fixation Cross activity complete!")
                 if st.button("Continue to Dot Activity"):
@@ -71,56 +74,71 @@ def render(go_to_next_page):
                     del st.session_state.fixation_cross_timer_start
                     st.rerun()
                     
-                    
     elif st.session_state.activity_stage == "dot_activity":
-        st.subheader("Activity 3: Dot Activity")
-        st.write("Follow the dot with your eyes and **click it when it turns red.**")
+        st.subheader("Activity 3: Eye Movement Task")
+        st.write("Please follow the dot with your eyes as it moves from left to right.")
 
+        # This block runs BEFORE the activity starts
         if "dot_activity_started" not in st.session_state:
-            if st.button("Start Dot Activity"):
+            if st.button("Start Eye Movement Activity"):
                 st.session_state.dot_activity_started = True
-                st.session_state.dot_activity_timer_start = time.time()
+                st.session_state.dot_activity_timer_start = time.time() # Main timer for the activity
+                st.session_state.sweep_start_time = time.time()         # Timer for the 5-second sweep
                 st.rerun()
         else:
-            elapsed_time = time.time() - st.session_state.dot_activity_timer_start
-            remaining = int(30 - elapsed_time)
-            st.write(f"⏳ Time left: **{remaining} seconds**")
+            # Check the main timer for the whole activity
+            elapsed = time.time() - st.session_state.dot_activity_timer_start
+            TOTAL_DURATION = 30  # Set a total duration for the activity
 
-            # Initialize dot properties if they don't exist
-            if "dot_color" not in st.session_state:
-                st.session_state.dot_color = "blue"
-                st.session_state.dot_x = random.randint(10, 90)
-                st.session_state.dot_y = random.randint(20, 80) # Adjusted Y to be less likely to overlap text
-                st.session_state.dot_last_update = time.time()
+            # This is the DURING phase (timer is still running)
+            if elapsed < TOTAL_DURATION:
+                remaining_total = int(TOTAL_DURATION - elapsed)
+                st.write(f"⏳ Time left: **{remaining_total} seconds**")
 
-            # Update dot position and color periodically
-            if time.time() - st.session_state.dot_last_update > 1.5:
-                st.session_state.dot_color = random.choice(["blue", "red"])
-                st.session_state.dot_x = random.randint(10, 90)
-                st.session_state.dot_y = random.randint(20, 80)
-                st.session_state.dot_last_update = time.time()
+                # --- Dot Animation Logic ---
+                horizontal_steps = [10, 30, 50, 70, 90]
+                SWEEP_DURATION_SECONDS = 5.0
+                current_time = time.time()
 
-            dot_html = f"""
-            <div style="position: relative; height: 300px; border: 1px solid #ddd; border-radius: 5px;">
-                <span style="
-                    position: absolute;
-                    left: {st.session_state.dot_x}%;
-                    top: {st.session_state.dot_y}%;
-                    width: 30px;
-                    height: 30px;
-                    background-color: {st.session_state.dot_color};
-                    border-radius: 50%;
-                    transform: translate(-50%, -50%);
-                "></span>
-            </div>
-            """
-            st.markdown(dot_html, unsafe_allow_html=True)
+                if "sweep_start_time" not in st.session_state:
+                    st.session_state.sweep_start_time = current_time
 
-            if remaining > 0:
-                time.sleep(1)
+                if current_time - st.session_state.sweep_start_time > SWEEP_DURATION_SECONDS:
+                    st.session_state.sweep_start_time = current_time
+
+                elapsed_in_sweep = current_time - st.session_state.sweep_start_time
+                step_index = int(elapsed_in_sweep)
+                step_index = min(step_index, len(horizontal_steps) - 1)
+                dot_x_position = horizontal_steps[step_index]
+
+                # VISIBILITY FIX: Increased container height and dot size for better visibility
+                dot_html = f"""
+                <div style='position: relative; height: 200px; border: 2px solid #666; border-radius: 8px; margin-top: 20px;'>
+                    <div style='
+                        position: absolute;
+                        left: {dot_x_position}%;
+                        top: 50%;
+                        width: 35px;
+                        height: 35px;
+                        background-color: black;
+                        border-radius: 50%;
+                        transform: translate(-50%, -50%);
+                        transition: left 0.5s ease-in-out;
+                    '></div>
+                </div>
+                """
+                st.markdown(dot_html, unsafe_allow_html=True)
+
+                time.sleep(0.1)
                 st.rerun()
+
+            # This is the AFTER phase (timer has finished)
             else:
                 st.success("✅ Dot activity complete!")
                 if st.button("Proceed to Stories"):
+                    # Clean up state variables for this activity
+                    del st.session_state.dot_activity_started
+                    del st.session_state.dot_activity_timer_start
+                    del st.session_state.sweep_start_time
                     go_to_next_page()
                     st.rerun()
