@@ -1,7 +1,7 @@
 import streamlit as st
 
 def render(go_to_next_page):
-    st.title("The Inner Mirror: A Journey to Understanding and Growth")
+    st.title("Welcome to the experiment ")
 
     # --- UPDATED CONSENT STATEMENT ---
     st.info(

@@ -38,15 +38,42 @@ def sanitize_data(data):
 
 
 # --- Main Render Function ---
+# --- Main Render Function ---
 def render(go_to_next_page):
     st.header("🧠 Final Feedback")
     st.write("Your anonymous feedback is valuable for improving this experience.")
-    
+
+    # Likert scale options
+    likert_options = ["1 - Strongly Disagree", "2 - Disagree", "3 - Neutral", "4 - Agree", "5 - Strongly Agree"]
+
     fb = {
-        "comfortable": st.text_area("1. How comfortable were you during this narrative experience?"),
-        "difficulties": st.text_area("2. Did you face any difficulties or find any part confusing?"),
-        "liked_most": st.text_area("3. What did you like most about the story or the process?"),
-        "suggestions": st.text_area("4. Do you have any suggestions for improvement?")
+        "comfortable": st.radio(
+            "1. I felt comfortable during this narrative experience.",
+            likert_options,
+            index=2,  # Default to Neutral
+            horizontal=True
+        ),
+        "clarity": st.radio(
+            "2. The process was clear and easy to follow.",
+            likert_options,
+            index=2,
+            horizontal=True
+        ),
+        "engagement": st.radio(
+            "3. I found the story engaging and interesting.",
+            likert_options,
+            index=2,
+            horizontal=True
+        ),
+        "recommend": st.radio(
+            "4. I would recommend this experience to others.",
+            likert_options,
+            index=2,
+            horizontal=True
+        ),
+        "suggestions": st.text_area(
+            "5. Any additional comments or suggestions? (Optional)"
+        )
     }
 
     if st.button("Finish & Save Report"):
@@ -57,10 +84,7 @@ def render(go_to_next_page):
         reflections = st.session_state.get("reflections", {})
         quiz_answers = st.session_state.get("quiz_answers", {})
         quiz_scores = st.session_state.get("sc_scores", {})
-        
-        # ✅ CORRECTED: Use 'story_text' to get the generated stories
-        story_text_data = st.session_state.get("story_text", {}) 
-        
+        story_text_data = st.session_state.get("story_text", {})
         final_fb = fb
 
         with st.spinner("Saving your report..."):
@@ -102,7 +126,6 @@ def render(go_to_next_page):
             pdf.add_section("Personal Data", sanitize_data(pdata))
             pdf.add_section("Quiz Responses & Scores", sanitize_data({"answers": quiz_answers, "scores": quiz_scores}))
             pdf.add_section("Reflections", sanitize_data(reflections))
-            # ✅ CORRECTED: Add the story section to the PDF
             if story_text_data:
                 pdf.add_section("Generated Story Scenes", sanitize_data(story_text_data))
             pdf.add_section("Final Feedback", sanitize_data(final_fb))
@@ -117,4 +140,3 @@ def render(go_to_next_page):
 
             st.info("Thank you for participating in the experiment!")
             st.stop()
-

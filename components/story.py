@@ -6,6 +6,7 @@ import os
 import re
 import time
 import google.generativeai as genai
+from pylsl import StreamInfo, StreamOutlet
 #from huggingface_hub import InferenceClient
 
 # Load environment variables
@@ -384,6 +385,8 @@ def generate_kinder_monologue_text(previous_scene_text, theme_name, _pdata):
 def initialize_story_flow(scores):
     if 'scene_map' in st.session_state:
         return
+    
+    st.session_state.markers_sent = set()
 
     # Add a view_mode to control showing story vs. questions
     st.session_state.view_mode = 'story' 
@@ -461,7 +464,7 @@ def generate_dynamic_fourth_question(theme_name, score):
     
     return "What is one key message or feeling you are taking away from this scene?" # Fallback question
 
-def display_story_scene(pdata, primary_theme_map, neutral_scenes):
+def display_story_scene(pdata, primary_theme_map, neutral_scenes, lsl_outlet):
     """
     Handles the generation and paragraph-by-paragraph display of the story scene.
     """
@@ -469,6 +472,19 @@ def display_story_scene(pdata, primary_theme_map, neutral_scenes):
     scene_info = st.session_state.scene_map[scene_index]
     scene_number = scene_info['number']
     scene_type = scene_info['type']
+    
+    if scene_number not in st.session_state.markers_sent:
+        # Create a dynamic marker string
+        marker = f"SceneStart_{scene_number}_{scene_type}"
+        
+        # Push the marker to the LSL stream
+        lsl_outlet.push_sample([marker])
+        
+        # Log it for debugging in your terminal
+        print(f"Sent LSL Marker: {marker}")
+        
+        # Add the scene number to our set of sent markers to prevent duplicates
+        st.session_state.markers_sent.add(scene_number)
     
     st.header(f"Scene {scene_index + 1} / {st.session_state.total_scenes}")
     st.divider()
@@ -581,7 +597,7 @@ def display_reflection_page(pdata, primary_theme_map, scores, go_to_next_page):
 
 
 # --- ✅ 4. MODIFIED MAIN RENDER FUNCTION ---
-def render(go_to_next_page):
+def render(go_to_next_page,lsl_outlet):
     if "sc_scores" not in st.session_state or "personal_data" not in st.session_state:
         st.warning("⚠️ Required data not found. Please start from the beginning.")
         if st.button("Go to Start"): st.session_state.page = "start"; st.rerun()
@@ -642,7 +658,7 @@ def render(go_to_next_page):
 
     # Use the view_mode state to decide what to show
     if st.session_state.view_mode == 'story':
-        display_story_scene(pdata, primary_theme_map, neutral_scenes)
+        display_story_scene(pdata, primary_theme_map, neutral_scenes, lsl_outlet)
     elif st.session_state.view_mode == 'reflection':
         display_reflection_page(pdata, primary_theme_map, scores, go_to_next_page)
 
