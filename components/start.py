@@ -15,10 +15,16 @@ def render(go_to_next_page):
         **Purpose of the Research:** This study aims to investigate brain activity during emotional and cognitive tasks.
         
         **Procedures:** You will be fitted with an EEG and fNIRS cap to measure your brain's electrical and blood flow activity. You will then be asked to perform a series of tasks, including reading stories and answering questions about your experience. The entire session will last approximately 35 minutes.
+        
+        **Nature:** This in non-diagnostic and non-therapeutic research. No medical or psychological treatment will be provided.
+        
+        **Risks:** It is a non-invasive procedure with minimal risk. You may experience slight discomfort from wearing the cap, but there are no known risks associated with EEG or fNIRS.
 
         **Confidentiality and Anonymity:** Your participation will be kept strictly confidential. All data collected, including your brain activity recordings and your responses, will be **anonymized**. Your name or any personal identifiers will not be linked to the data in any publication or presentation. The anonymous data will be used solely for academic research purposes.
 
         **Voluntary Participation:** Your participation in this study is completely voluntary. You are free to withdraw at any time without any penalty.
+        
+        
 
         By checking the box below, you acknowledge that you have read and understood the information above and voluntarily agree to participate.
         """

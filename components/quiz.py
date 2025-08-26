@@ -126,23 +126,23 @@ def render(go_to_next_page):
             st.success("✅ Quiz submitted successfully!")
             
             # --- DISPLAY SCORES ---
-            st.markdown("---")
-            st.subheader("Your Results")
-            st.markdown("A higher score indicates a stronger tendency towards the positive aspect of each pair (e.g., more Self-Kindness).")
+            # st.markdown("---")
+            # st.subheader("Your Results")
+            # st.markdown("A higher score indicates a stronger tendency towards the positive aspect of each pair (e.g., more Self-Kindness).")
 
-            # Define max scores for context
-            max_scores = {
-                "Self-Kindness vs Self-Judgment": 50, # 10 questions * 5 points
-                "Common Humanity vs Isolation": 40,   # 8 questions * 5 points
-                "Mindfulness vs Overidentification": 40 # 8 questions * 5 points
-            }
+            # # Define max scores for context
+            # max_scores = {
+            #     "Self-Kindness vs Self-Judgment": 50, # 10 questions * 5 points
+            #     "Common Humanity vs Isolation": 40,   # 8 questions * 5 points
+            #     "Mindfulness vs Overidentification": 40 # 8 questions * 5 points
+            # }
 
-            # Display each score with its maximum possible value
-            for section, score in scores.items():
-                max_score = max_scores[section]
-                st.markdown(f"**{section}:** `{score} / {max_score}`")
+            # # Display each score with its maximum possible value
+            # for section, score in scores.items():
+            #     max_score = max_scores[section]
+            #     st.markdown(f"**{section}:** `{score} / {max_score}`")
             
-            st.markdown("---")
+            # st.markdown("---")
             # --- END OF DISPLAY SCORES ---
 
             # Display the continue button to proceed

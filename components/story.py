@@ -6,7 +6,7 @@ import os
 import re
 import time
 import google.generativeai as genai
-from pylsl import StreamInfo, StreamOutlet
+#from pylsl import StreamInfo, StreamOutlet
 #from huggingface_hub import InferenceClient
 
 # Load environment variables
@@ -445,26 +445,32 @@ def generate_dynamic_fourth_question(theme_name, score):
     # You can make this as complex as you need.
     
     if theme_name == "Self-Kindness vs Self-Judgment":
-        if score < 18: # Example threshold for low score
-            return "The character was quite hard on themselves. What's one gentle or kind thought they could have offered themselves in that moment?"
+        if score < 25: # Low score
+            return "When you think about the main character’s struggle, did you feel like they deserved understanding or support? Why or why not? (Write atleast 2-4 sentences)"
+        elif score in [26, 34]: # Medium score
+            return "If you were in the main character’s place, in which ways would you encourage your friends to be more kind to themselves? (Write atleast 2-4 sentences)"
         else: # Example for high score
-            return "The character found a way to be kind to themselves. What helps you access your own kinder inner voice when you're struggling?"
+            return "If you were in the main character’s place, in which ways would you encourage your friends to be more kind to themselves? (Write atleast 2-4 sentences)"
             
     elif theme_name == "Common Humanity vs Isolation":
-        if score < 18:
-            return "Feeling isolated is a tough experience, as the character showed. What's a small reminder you can use to remember that everyone struggles at times?"
+        if score < 20:
+            return "Think of a moment when your struggle felt personal. What thoughts came up, and how did you try to hold space for yourself at that moment? (Write atleast 2-4 sentences)"
+        elif score in [21, 27]: # Medium score
+            return "Think of a moment when your struggle felt personal. What thoughts came up, and how did you try to hold space for yourself at that moment? (Write atleast 2-4 sentences)"
         else:
-            return "The character started to realize they weren't alone. How does connecting with others, even in small ways, affect your own perspective?"
+            return "If you were in the main character’s place, in which ways would you nudge your friends to think that others also go through similar situations? (Write atleast 2-4 sentences)"
 
     elif theme_name == "Mindfulness vs Overidentification":
-        if score < 18:
-            return "The character was completely swept away by their difficult thoughts. What's one physical sensation you can focus on right now (like your feet on the floor) to ground yourself?"
+        if score < 20:  # Low Score 
+            return "Recall a time when you tried to sit with a painful feeling without letting it overwhelm you. What helped you stay with it, or what made it difficult? (Write atleast 2-4 sentences)"
+        elif score in [21, 27]: # Medium score
+            return "Recall a time when you tried to sit with a painful feeling without letting it overwhelm you. What helped you stay with it, or what made it difficult? (Write atleast 2-4 sentences)"
         else:
-            return "The character managed to observe their thoughts without getting lost in them. What does the idea of 'thoughts are not facts' mean to you?"
+            return "If you were in the main character’s place, in which ways would you encourage your friends to think that it's possible to sit with painful feelings without getting swept away by them? (Write atleast 2-4 sentences)"
     
     return "What is one key message or feeling you are taking away from this scene?" # Fallback question
 
-def display_story_scene(pdata, primary_theme_map, neutral_scenes, lsl_outlet):
+def display_story_scene(pdata, primary_theme_map, neutral_scenes):
     """
     Handles the generation and paragraph-by-paragraph display of the story scene.
     """
@@ -473,18 +479,18 @@ def display_story_scene(pdata, primary_theme_map, neutral_scenes, lsl_outlet):
     scene_number = scene_info['number']
     scene_type = scene_info['type']
     
-    if scene_number not in st.session_state.markers_sent:
-        # Create a dynamic marker string
-        marker = f"SceneStart_{scene_number}_{scene_type}"
+    # if scene_number not in st.session_state.markers_sent:
+    #     # Create a dynamic marker string
+    #     marker = f"SceneStart_{scene_number}_{scene_type}"
         
-        # Push the marker to the LSL stream
-        lsl_outlet.push_sample([marker])
+    #     # Push the marker to the LSL stream
+    #     lsl_outlet.push_sample([marker])
         
-        # Log it for debugging in your terminal
-        print(f"Sent LSL Marker: {marker}")
+    #     # Log it for debugging in your terminal
+    #     print(f"Sent LSL Marker: {marker}")
         
-        # Add the scene number to our set of sent markers to prevent duplicates
-        st.session_state.markers_sent.add(scene_number)
+    #     # Add the scene number to our set of sent markers to prevent duplicates
+    #     st.session_state.markers_sent.add(scene_number)
     
     st.header(f"Scene {scene_index + 1} / {st.session_state.total_scenes}")
     st.divider()
@@ -546,7 +552,7 @@ def display_reflection_page(pdata, primary_theme_map, scores, go_to_next_page):
     if scene_type in ['compassion', 'kinder']:
         st.session_state.reflections[f"reflect_{scene_number}_relatedness"] = st.slider(
             "**How much did you relate to the main character in this scene?**",
-            min_value=1, max_value=10, value=5,
+            min_value="1 (Not at all)", max_value="10 (Completely)", value=10,
             help="1 = Not at all, 10 = Completely"
         )
 
@@ -597,7 +603,7 @@ def display_reflection_page(pdata, primary_theme_map, scores, go_to_next_page):
 
 
 # --- ✅ 4. MODIFIED MAIN RENDER FUNCTION ---
-def render(go_to_next_page,lsl_outlet):
+def render(go_to_next_page):
     if "sc_scores" not in st.session_state or "personal_data" not in st.session_state:
         st.warning("⚠️ Required data not found. Please start from the beginning.")
         if st.button("Go to Start"): st.session_state.page = "start"; st.rerun()
@@ -658,7 +664,7 @@ def render(go_to_next_page,lsl_outlet):
 
     # Use the view_mode state to decide what to show
     if st.session_state.view_mode == 'story':
-        display_story_scene(pdata, primary_theme_map, neutral_scenes, lsl_outlet)
+        display_story_scene(pdata, primary_theme_map, neutral_scenes)
     elif st.session_state.view_mode == 'reflection':
         display_reflection_page(pdata, primary_theme_map, scores, go_to_next_page)
 

@@ -13,11 +13,23 @@ def render(go_to_next_page):
         "**By clicking the 'Continue' button below, you confirm that you have read and understood this information and consent to participate.**"
     )
     st.divider()
+    gender_options = [
+    "Male (He/Him)",
+    "Female (She/Her)",
+    "Non-binary (They/Them)",
+    "Prefer to self-describe",
+    "Prefer not to say"
+]
 
     with st.form("personal_form"):
         name = st.text_input("1. What's your name or nickname?", placeholder="This could be your full name, a shortened name or whatever feels most 'you'. ")
         age = st.number_input("2. How old are you?", min_value=0, max_value=100)
-        gender = st.text_input("3. How do you identify yourself? (Gender)")
+        gender = st.selectbox(
+            "3. How do you identify yourself? (Gender & Pronouns)",
+            options=gender_options,
+            index=None,  # This makes the default selection blank
+            placeholder="Select an option..."
+        )
         profession = st.text_input("4. What are you currently doing in life?", placeholder="For example: A student? working? figuring things out? somewhere in between?")
         university = st.text_input("5. What is your university or company name?")
         emotion = st.text_area("6. Is there anything on your mind right now?", placeholder="You can write about something you're thinking about, feeling, or dealing with - big or small, joyful or stressful.")

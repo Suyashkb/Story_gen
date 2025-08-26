@@ -1,7 +1,7 @@
 import streamlit as st
 import time
 import random
-from pylsl import StreamInfo, StreamOutlet 
+#from pylsl import StreamInfo, StreamOutlet 
 
 def render(go_to_next_page):
     # Initialize the main stage controller if it doesn't exist
