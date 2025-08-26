@@ -552,7 +552,7 @@ def display_reflection_page(pdata, primary_theme_map, scores, go_to_next_page):
     if scene_type in ['compassion', 'kinder']:
         st.session_state.reflections[f"reflect_{scene_number}_relatedness"] = st.slider(
             "**How much did you relate to the main character in this scene?**",
-            min_value="1 (Not at all)", max_value="10 (Completely)", value=10,
+            min_value=1, max_value=10, value=10,
             help="1 = Not at all, 10 = Completely"
         )
 

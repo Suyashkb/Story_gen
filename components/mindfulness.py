@@ -19,7 +19,7 @@ def render(go_to_next_page):
                 st.rerun()
         else:
             elapsed = time.time() - st.session_state.eyes_closed_timer_start
-            remaining = int(5 - elapsed)
+            remaining = int(30 - elapsed)
 
             if remaining > 0:
                 st.write(f"⏳ Time left: **{remaining} seconds**")
@@ -53,7 +53,7 @@ def render(go_to_next_page):
             elapsed = time.time() - st.session_state.fixation_cross_timer_start
             
             # This is the DURING phase (timer is still running)
-            if elapsed < 5:
+            if elapsed < 30:
                 # Display ONLY the fixation cross, centered on the page
                 st.markdown("""
                     <div style='display: flex; justify-content: center; align-items: center; height: 70vh;'>
@@ -89,7 +89,7 @@ def render(go_to_next_page):
         else:
             # Check the main timer for the whole activity
             elapsed = time.time() - st.session_state.dot_activity_timer_start
-            TOTAL_DURATION = 10  # Set a total duration for the activity
+            TOTAL_DURATION = 30  # Set a total duration for the activity
 
             # This is the DURING phase (timer is still running)
             if elapsed < TOTAL_DURATION:
@@ -97,7 +97,7 @@ def render(go_to_next_page):
                 st.write(f"⏳ Time left: **{remaining_total} seconds**")
 
                 # --- Dot Animation Logic ---
-                horizontal_steps = [10, 30, 50, 70, 90]
+                horizontal_steps = [10, 30, 50, 70, 90, 120, 150]
                 SWEEP_DURATION_SECONDS = 3.0
                 current_time = time.time()
 
