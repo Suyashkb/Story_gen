@@ -6,7 +6,7 @@ import os
 import re
 import time
 import google.generativeai as genai
-from huggingface_hub import InferenceClient 
+#from huggingface_hub import InferenceClient 
 #from pylsl import StreamInfo, StreamOutlet
 #from huggingface_hub import InferenceClient
 
