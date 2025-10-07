@@ -357,14 +357,7 @@ def generate_story_text(scene_idx, ongoing_story, _pdata,primary_theme_map):
         8.  Try to include monologues or internal dialogues that reflect the character's emotional state and growth.
         9.  Use the vocabulary of a middle school child (easy to understand and simple words)
         """
-        print("--- DEBUG: DATA FOR PROMPT ---")
-        print(f"Scene Index: {scene_idx}")
-        print(f"P-Data: {_pdata}")
-        print(f"Ongoing Story Length: {len(ongoing_story)}")
-        print("--- FINAL PROMPT ---")
-        print(prompt)
-        print("--------------------")
-        
+
         try:
             # Call the Google Generative AI API
             response = model.generate_content(prompt)
