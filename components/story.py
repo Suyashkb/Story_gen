@@ -6,13 +6,14 @@ import os
 import re
 import time
 import google.generativeai as genai
+from huggingface_hub import InferenceClient 
 #from pylsl import StreamInfo, StreamOutlet
 #from huggingface_hub import InferenceClient
 
 # Load environment variables
 load_dotenv()
 
-# Get Google API Key from Streamlit secrets
+#Get Google API Key from Streamlit secrets
 google_api_key = st.secrets.get("GOOGLE_API_KEY", os.getenv("GOOGLE_API_KEY"))
 
 if not google_api_key:
@@ -23,10 +24,26 @@ if not google_api_key:
 try:
     genai.configure(api_key=google_api_key)
     # Using gemini-1.5-flash as it's fast and effective for creative text
-    model = genai.GenerativeModel('gemini-1.5-flash-latest') 
+    model = genai.GenerativeModel('gemini-2.0-flash') 
 except Exception as e:
     st.error(f"Could not initialize the Google Generative AI Client. Error: {e}")
     st.stop()
+
+# hf_token = st.secrets.get("HUGGINGFACE_TOKEN", os.getenv("HUGGINGFACE_TOKEN"))
+
+# if not hf_token:
+#     st.error("❌ HUGGINGFACE_TOKEN is not set.")
+#     st.stop()
+
+# # CONFIGURE THE HUGGING FACE CLIENT
+# try:
+#     # We will use a popular free model like Mistral's Instruct model
+#     # It's good at following instructions, which is what your prompts need.
+#     repo_id = "mistralai/Mistral-7B-Instruct-v0.1"
+#     client = InferenceClient(model=repo_id, token=hf_token)
+# except Exception as e:
+#     st.error(f"Could not initialize the Hugging Face Client. Error: {e}")
+#     st.stop()
     
     
 def get_kindness_story(score):
@@ -304,7 +321,8 @@ def extract_story_from_llm_output(raw_text: str) -> str:
                 story_lines.append(line)
 
         return "\n".join(story_lines).strip() if story_lines else raw_text.strip()
-
+    
+#gemini generation model
 def generate_story_text(scene_idx, ongoing_story, _pdata,primary_theme_map):
         theme_name, base_template = primary_theme_map[scene_idx]
         
@@ -339,6 +357,13 @@ def generate_story_text(scene_idx, ongoing_story, _pdata,primary_theme_map):
         8.  Try to include monologues or internal dialogues that reflect the character's emotional state and growth.
         9.  Use the vocabulary of a middle school child (easy to understand and simple words)
         """
+        print("--- DEBUG: DATA FOR PROMPT ---")
+        print(f"Scene Index: {scene_idx}")
+        print(f"P-Data: {_pdata}")
+        print(f"Ongoing Story Length: {len(ongoing_story)}")
+        print("--- FINAL PROMPT ---")
+        print(prompt)
+        print("--------------------")
         
         try:
             # Call the Google Generative AI API
@@ -347,10 +372,61 @@ def generate_story_text(scene_idx, ongoing_story, _pdata,primary_theme_map):
             return extract_story_from_llm_output(response.text)
             
         except Exception as e:
-            st.error(f"❌ Error generating story with Gemma: {e}")
+#         # It's good practice to print the error to your terminal for debugging
+        
+            print(f"❌ API CALL FAILED WITH ERROR: {e}") # This will show the real reason
             return None
+
+# def generate_story_text(scene_idx, ongoing_story, _pdata, primary_theme_map):
+#     theme_name, base_template = primary_theme_map[scene_idx]
+    
+#     # SLIGHTLY TWEAKED PROMPT FOR MISTRAL/INSTRUCTION MODELS
+#     prompt = f"""
+#     [INST] You are a skilled writer. Continue the following story based on the provided character details, theme, and instructions.
+
+#     **Character:** {_pdata['name']} (age {_pdata['age']}, gender {_pdata['gender']}, a {_pdata['profession']}).
+#     **Current Emotion:** '{_pdata['emotion']}'
+#     **Family Perspective:** '{_pdata['family_oriented']}'
+#     **Theme:** {theme_name}
+
+#     **Story So Far:**
+#     {ongoing_story}
+
+#     **Instructions:**
+#     1. Continue the story using the emotional and structural base of this template: "{base_template}"
+#     2. Personalize the theme for the character.
+#     3. Keep the tone grounded, subtle, and use simple language.
+#     4. Write exactly 3 short paragraphs.
+#     5. Do not include titles, headings, or introductions. Your response must be only the raw story text. [/INST]
+#     """
+#     print("--- DEBUG: DATA FOR PROMPT ---")
+#     print(f"Scene Index: {scene_idx}")
+#     print(f"P-Data: {_pdata}")
+#     print(f"Ongoing Story Length: {len(ongoing_story)}")
+#     print("--- FINAL PROMPT ---")
+#     print(prompt)
+#     print("--------------------")
+    
+#     try:
+#         # CALL THE HUGGING FACE API
+#         # The 'text_generation' method returns a string directly.
+#         response_text = client.text_generation(
+#             prompt,
+#             max_new_tokens=400, # Set a limit for the generated text
+#             temperature=0.7,
+#             repetition_penalty=1.2,
+#         )
+#         # No need for extract_story_from_llm_output if the model behaves
+#         return response_text.strip()
         
+#     except Exception as e:
+#         # It's good practice to print the error to your terminal for debugging
         
+#         print(f"❌ API CALL FAILED WITH ERROR: {e}") # This will show the real reason
+#         return None
+    
+# gemini story gen 
+
 def generate_kinder_monologue_text(previous_scene_text, theme_name, _pdata):
     prompt = f"""
         You are a compassionate writing coach. Your task is to rewrite this short scene, focusing on shifting the character's internal monologue towards self-kindness and compassion.
@@ -378,8 +454,42 @@ def generate_kinder_monologue_text(previous_scene_text, theme_name, _pdata):
         response = model.generate_content(prompt)
         return extract_story_from_llm_output(response.text)
     except Exception as e:
-        st.error(f"❌ Error generating High K monologue: {e}")
+        # It's good practice to print the error to your terminal for debugging
+        
+        print(f"❌ API CALL FAILED WITH ERROR: {e}") # This will show the real reason
         return None
+
+# def generate_kinder_monologue_text(previous_scene_text, theme_name, _pdata):
+#     # SLIGHTLY TWEAKED PROMPT
+#     prompt = f"""
+#     [INST] You are a compassionate writing coach. Rewrite the following scene to shift the character's internal monologue towards self-kindness.
+
+#     **Character:** {_pdata['name']} ({_pdata['gender']}, a {_pdata['profession']} feeling '{_pdata['emotion']}').
+#     **Theme:** {theme_name}
+
+#     **Original Scene:**
+#     {previous_scene_text}
+
+#     **Instructions:**
+#     1. Rewrite the scene, making the character's inner voice more gentle and understanding.
+#     2. The change should be subtle and natural.
+#     3. Maintain a grounded, realistic tone.
+#     4. Your response must be short paragraphs of raw story text only. No titles or explanations. [/INST]
+#     """
+#     try:
+#         # CALL THE HUGGING FACE API
+#         response_text = client.text_generation(
+#             prompt,
+#             max_new_tokens=400,
+#             temperature=0.7,
+#             repetition_penalty=1.2,
+#         )
+#         return response_text.strip()
+        
+#     except Exception as e:
+#         print(f"❌ Hugging Face API Error (Kinder Monologue): {e}")
+#         st.error(f"❌ Error generating kinder monologue: {e}")
+#         return None
 
 # --- Story Flow and State Management ---
 def initialize_story_flow(scores):
@@ -500,6 +610,7 @@ def display_story_scene(pdata, primary_theme_map, neutral_scenes):
     if scene_type == 'neutral':
         full_text = neutral_scenes.get(scene_number, "Neutral scene text not found.")
     else: 
+        # The "After" code (more stable)
         if st.session_state.story_text.get(scene_number) is None:
             with st.spinner("✍️ Crafting the next part of your story..."):
                 new_text = None
@@ -512,12 +623,15 @@ def display_story_scene(pdata, primary_theme_map, neutral_scenes):
                     new_text = generate_kinder_monologue_text(prev_text, theme_name, pdata)
                 
                 st.session_state.story_text[scene_number] = new_text or "GENERATION_FAILED"
-                st.rerun()
+                # REMOVED st.rerun() from here
         
         full_text = st.session_state.story_text.get(scene_number)
 
-    if not full_text or full_text == "GENERATION_FAILED":
+    if not full_text :
         st.error("Could not display the story. Please try refreshing.")
+        return 
+    elif full_text=="GENERATION_FAILED":
+        st.error("THis is generation error")
         return
 
     # --- Appending to ongoing story ---
@@ -531,7 +645,7 @@ def display_story_scene(pdata, primary_theme_map, neutral_scenes):
     # If the last paragraph has been shown, display a button to move to reflections
     if all_paras_shown:
         st.divider()
-        if st.button("Proceed to Reflection 🤔", key=f"reflect_btn_{scene_number}"):
+        if st.button("Proceed to Reflection", key=f"reflect_btn_{scene_number}"):
             st.session_state.view_mode = 'reflection'
             st.rerun()
 
@@ -558,14 +672,14 @@ def display_reflection_page(pdata, primary_theme_map, scores, go_to_next_page):
 
     # --- Q2: Valence ---
     st.session_state.reflections[f"reflect_{scene_number}_valence"] = st.radio(
-        "**How pleasant or unpleasant did the scene make you feel?** (Valence)",
+        "**How pleasant or unpleasant did you feel while reading the scene ?** (Valence)",
         options=['Very Unpleasant', 'Unpleasant', 'Neutral', 'Pleasant', 'Very Pleasant'],
         index=2, horizontal=True
     )
 
     # --- Q3: Arousal ---
     st.session_state.reflections[f"reflect_{scene_number}_arousal"] = st.radio(
-        "**How much energy or calmness did you feel from the scene?** (Arousal)",
+        "**How intense or calm was your emotional reaction to the text ?** (Arousal)",
         options=['Very Low Energy ', 'Low Energy', 'Neutral', 'High Energy', 'Very High Energy'],
         index=2, horizontal=True
     )
