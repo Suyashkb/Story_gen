@@ -39,41 +39,52 @@ def render(go_to_next_page):
                     st.rerun()
 
 
+    # ADD THIS NEW BLOCK IN ITS PLACE
     elif st.session_state.activity_stage == "fixation_cross":
-    # This block runs BEFORE the activity starts
-        if "fixation_cross_started" not in st.session_state:
+        # 1. Initialize a specific state for this activity
+        if "fixation_stage" not in st.session_state:
+            st.session_state.fixation_stage = "instruction"
+
+        # --- INSTRUCTION PHASE ---
+        if st.session_state.fixation_stage == "instruction":
             st.subheader("Activity 2")
             st.write("Now please focus on the '+' sign for 30 seconds. To begin the experiment press the button below.")
             if st.button("Begin Fixation Cross Activity"):
-                st.session_state.fixation_cross_started = True
+                # Set the timer and move to the 'running' stage
                 st.session_state.fixation_cross_timer_start = time.time()
+                st.session_state.fixation_stage = "running"
                 st.rerun()
-                
-        else:
+
+        # --- RUNNING PHASE ---
+        elif st.session_state.fixation_stage == "running":
             elapsed = time.time() - st.session_state.fixation_cross_timer_start
             
-            # This is the DURING phase (timer is still running)
             if elapsed < 30:
-                # Display ONLY the fixation cross, centered on the page
+                # Display ONLY the fixation cross, ensuring no other text is drawn
                 st.markdown("""
                     <div style='display: flex; justify-content: center; align-items: center; height: 70vh;'>
                         <p style='text-align: center; font-size: 100px;'>+</p>
                     </div>
                 """, unsafe_allow_html=True)
                 
-                # This loop forces a rerun every second to check the timer
+                # This loop forces a rerun to check the timer
                 time.sleep(1)
                 st.rerun()
-
-            # This is the AFTER phase (timer has finished)
             else:
-                st.success("✅ Fixation Cross activity complete!")
-                if st.button("Continue to Dot Activity"):
-                    st.session_state.activity_stage = "dot_activity"
-                    # Clean up old state variables
-                    del st.session_state.fixation_cross_started
-                    del st.session_state.fixation_cross_timer_start
-                    st.rerun()
+                # Once the timer is done, move to the 'finished' stage
+                st.session_state.fixation_stage = "finished"
+                st.rerun()
+
+        # --- FINISHED PHASE ---
+        elif st.session_state.fixation_stage == "finished":
+            st.success("✅ Fixation Cross activity complete!")
+            if st.button("Continue to Dot Activity"):
+                # Move to the next main activity
+                st.session_state.activity_stage = "dot_activity"
+                # Clean up the state variables for this activity
+                del st.session_state.fixation_stage
+                del st.session_state.fixation_cross_timer_start
+                st.rerun()
                     
     elif st.session_state.activity_stage == "dot_activity":
         st.subheader("Activity 3: Eye Movement Task")
