@@ -665,15 +665,15 @@ def display_reflection_page(pdata, primary_theme_map, scores, go_to_next_page):
 
     # --- Q2: Valence ---
     st.session_state.reflections[f"reflect_{scene_number}_valence"] = st.radio(
-        "**How pleasant or unpleasant did you feel while reading the scene ?** (Valence)",
+        "**How did you feel while reading the scene ?** ",
         options=['Very Unpleasant', 'Unpleasant', 'Neutral', 'Pleasant', 'Very Pleasant'],
         index=2, horizontal=True
     )
 
     # --- Q3: Arousal ---
     st.session_state.reflections[f"reflect_{scene_number}_arousal"] = st.radio(
-        "**How intense or calm was your emotional reaction to the text ?** (Arousal)",
-        options=['Very Low Energy ', 'Low Energy', 'Neutral', 'High Energy', 'Very High Energy'],
+        "**What was your emotional reaction towards the story ?** ",
+        options=['Very calm ', 'Calm', 'Moderate', 'Stressful', 'Very Stressful'],
         index=2, horizontal=True
     )
 
