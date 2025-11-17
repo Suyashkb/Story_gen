@@ -78,7 +78,7 @@ def get_kindness_story(score):
     #         The failure still stung. And he still believed it reflected something about him. But for tonight, at least, he let the judgment go quiet. Not out of kindness — just surrender.
     #         It wasn't a relief. But it was a pause.
     #         """
-    elif score in [26, 34]:
+    elif score in [26, 35]:
         return """
             P1
             Megha had always walked a fine line with her emotions, like a tightrope she couldn’t quite step off. Preparing for the CAT exams tested her more than school ever had. After every silly mistake, she’d sigh and mutter, 
@@ -154,7 +154,7 @@ def get_humanity_story(score):
     #     He still felt left out. And the feeling wasn’t going away. Everyone else seemed to be building, moving, rising.
     #     Arjun stared at the steam rising from his cup. Alone in the noise of the street, he mumbled, “But then Priya also didn’t make it. Maybe next time we get lucky.”
     #     """
-    elif score in [21,27]:
+    elif score in [21,28]:
         return """
             P1
             Meera clutched her guitar a little tighter as she stepped into her music studio . The last few compositions she’d made went flat during performance. She hadn’t told anyone, but it stung; music was supposed to bring her peace, not feel like another thing she was failing at.
@@ -190,50 +190,50 @@ def get_humanity_story(score):
     #     """
     else:
         return """P1
-Priya’s promotion from intern to full time didn’t come through. She had poured in long hours, skipped her cousin’s wedding prep, and met every deadline. The news stung,  but it didn’t break her.
-Her mother sat beside her with chai and a warm smile. “Even ISRO didn’t land Chandrayaan on the moon the first time,” she said. “But they still made the world watch when they did. India ka jhanda lehraya — and so will yours, beta.”
-P2
-Priya nodded, the words settling gently in her chest. Instead of sulking, she stepped out for a walk in Lodhi Garden. The breeze felt like a small kindness. She recalled her mentor’s voice: “You’re not behind. You’re just becoming.”
-Later that evening, she curled up on the sofa and rewatched Swades. As SRK said, “Main nahi maanta humara desh duniya se kisi bhi maamle mein kam hai,” she whispered along, but this time, to herself.
-She wasn’t falling short. She was simply part of a bigger rhythm, one where setbacks weren’t shameful — just shared.
-While sipping her second cup of chai, she opened Instagram. A friend had posted about getting rejected by an MNC. Another wrote about a breakup. Priya smiled, not in amusement, but in recognition.
-Everyone was carrying something. Everyone was trying. The world wasn’t about flawless wins — it was about showing up anyway.
-That night, she journaled: “Today, I felt left out. But I also took care of myself. And I saw others doing the same.”
-She didn’t pretend everything was fine. But she didn’t feel alone in her sadness either.
-Her heart had grown quiet — not because it stopped aching, but because it understood: no one walks through this life unscathed.
-And we don’t have to. Not alone.
-In the weeks that followed, Priya began creating small spaces for others to feel less alone, too: She started a “Setback Saturdays” thread in her office Slack- a space where teammates could casually share one thing that hadn’t gone well that week, paired with one thing they were still proud of.
-During chai breaks, instead of jumping to pep-talks, she’d ask gently: “Want to vent or want company?”
-P3
-Just holding space became her quiet offering. On Instagram, she began posting small, honest reflections. Not curated wins, just real moments. A line from her journal. A half-burnt toast. A caption that simply read: “Learning as I go.”
-And when friends spiraled after rejections, she didn’t give advice first. She shared her own story. Not to compare, but to connect.
+            Priya’s promotion from intern to full time didn’t come through. She had poured in long hours, skipped her cousin’s wedding prep, and met every deadline. The news stung,  but it didn’t break her.
+            Her mother sat beside her with chai and a warm smile. “Even ISRO didn’t land Chandrayaan on the moon the first time,” she said. “But they still made the world watch when they did. India ka jhanda lehraya — and so will yours, beta.”
+            P2
+            Priya nodded, the words settling gently in her chest. Instead of sulking, she stepped out for a walk in Lodhi Garden. The breeze felt like a small kindness. She recalled her mentor’s voice: “You’re not behind. You’re just becoming.”
+            Later that evening, she curled up on the sofa and rewatched Swades. As SRK said, “Main nahi maanta humara desh duniya se kisi bhi maamle mein kam hai,” she whispered along, but this time, to herself.
+            She wasn’t falling short. She was simply part of a bigger rhythm, one where setbacks weren’t shameful — just shared.
+            While sipping her second cup of chai, she opened Instagram. A friend had posted about getting rejected by an MNC. Another wrote about a breakup. Priya smiled, not in amusement, but in recognition.
+            Everyone was carrying something. Everyone was trying. The world wasn’t about flawless wins — it was about showing up anyway.
+            That night, she journaled: “Today, I felt left out. But I also took care of myself. And I saw others doing the same.”
+            She didn’t pretend everything was fine. But she didn’t feel alone in her sadness either.
+            Her heart had grown quiet — not because it stopped aching, but because it understood: no one walks through this life unscathed.
+            And we don’t have to. Not alone.
+            In the weeks that followed, Priya began creating small spaces for others to feel less alone, too: She started a “Setback Saturdays” thread in her office Slack- a space where teammates could casually share one thing that hadn’t gone well that week, paired with one thing they were still proud of.
+            During chai breaks, instead of jumping to pep-talks, she’d ask gently: “Want to vent or want company?”
+            P3
+            Just holding space became her quiet offering. On Instagram, she began posting small, honest reflections. Not curated wins, just real moments. A line from her journal. A half-burnt toast. A caption that simply read: “Learning as I go.”
+            And when friends spiraled after rejections, she didn’t give advice first. She shared her own story. Not to compare, but to connect.
 
 
-Because Priya knew now: sometimes, healing begins not with solutions, but with someone saying, “Me too. I get it.”
-And in choosing to be that someone — she helped others remember they were never alone to begin with.
+            Because Priya knew now: sometimes, healing begins not with solutions, but with someone saying, “Me too. I get it.”
+            And in choosing to be that someone — she helped others remember they were never alone to begin with.
 
 """
 
 def get_mindfulness_story(score):
     if score <= 20:
         return """
-P1
-Tanishq had poured everything he had into a business idea, an eco-friendly courier bag made of starch. He believed in it, saw its potential. But at the investor pitch in Mumbai, the judges didn’t share his vision.
-p2
-“Too idealistic,” one of them said, barely glancing up. Another scrolled through his phone, uninterested.
-That night, Tanishq couldn’t sleep. His thoughts circled endlessly:
- “You’re a joke.”
- “You really thought you had something special?”
- “Everyone else is doing better. You’re the only one who doesn't belong.”
-He skipped the mess, silenced his phone, and lay still for hours, watching the ceiling fan spin above him. The rejection didn’t feel like feedback, it felt like proof. Proof that he wasn't smart enough, talented enough, or worth taking seriously.
-Even when his roommate brought him samosas from the canteen, he barely acknowledged it. What was the point? One failed pitch had become a verdict on his worth.
-He couldn’t separate what happened from who he was. The line between the idea and himself had blurred and shattered.
-p3
-Beneath the crushing silence, a single, desperate thought clawed for space: “You are not just this failure.”
-He didn’t believe it. The idea felt brittle—ready to snap beneath the weight of self-disgust.
-Still, it flickered on, stubborn as a heartbeat in darkness.
-Maybe there was more to him than this ruin.
-Maybe.
+            P1
+            Tanishq had poured everything he had into a business idea, an eco-friendly courier bag made of starch. He believed in it, saw its potential. But at the investor pitch in Mumbai, the judges didn’t share his vision.
+            p2
+            “Too idealistic,” one of them said, barely glancing up. Another scrolled through his phone, uninterested.
+            That night, Tanishq couldn’t sleep. His thoughts circled endlessly:
+            “You’re a joke.”
+            “You really thought you had something special?”
+            “Everyone else is doing better. You’re the only one who doesn't belong.”
+            He skipped the mess, silenced his phone, and lay still for hours, watching the ceiling fan spin above him. The rejection didn’t feel like feedback, it felt like proof. Proof that he wasn't smart enough, talented enough, or worth taking seriously.
+            Even when his roommate brought him samosas from the canteen, he barely acknowledged it. What was the point? One failed pitch had become a verdict on his worth.
+            He couldn’t separate what happened from who he was. The line between the idea and himself had blurred and shattered.
+            p3
+            Beneath the crushing silence, a single, desperate thought clawed for space: “You are not just this failure.”
+            He didn’t believe it. The idea felt brittle—ready to snap beneath the weight of self-disgust.
+            Still, it flickered on, stubborn as a heartbeat in darkness.
+            Maybe there was more to him than this ruin.
+            Maybe.
 """
     # elif score in [15, 20]:
     #     return """Ananya loved doodling mandalas and had recently applied for a design fellowship run by a Delhi-based NGO. When she didn’t get selected, she shrugged in front of her mother, saying, “It’s okay, I didn’t expect much anyway.”
@@ -494,10 +494,9 @@ def initialize_story_flow(scores):
     # Add a view_mode to control showing story vs. questions
     st.session_state.view_mode = 'story' 
     
-    KINDER_MONOLOGUE_THRESHOLD = 22
+    KINDER_MONOLOGUE_THRESHOLD = 26
     st.session_state.scene_map = []
     
-    # (The rest of your original logic is fine)
     st.session_state.scene_map.append({'number': 1, 'type': 'neutral'})
     st.session_state.scene_map.append({'number': 2, 'type': 'compassion'})
     if scores.get("Self-Kindness vs Self-Judgment", 99) < KINDER_MONOLOGUE_THRESHOLD:
@@ -548,7 +547,7 @@ def generate_dynamic_fourth_question(theme_name, score):
     # You can make this as complex as you need.
     
     if theme_name == "Self-Kindness vs Self-Judgment":
-        if score < 25: # Low score
+        if score < 26: # Low score
             return "When you think about the main character’s struggle, did you feel like they deserved understanding or support? Why or why not? (Write atleast 2-4 sentences)"
         elif score in [26, 34]: # Medium score
             return "If you were in the main character’s place, in which ways would you encourage your friends to be more kind to themselves? (Write atleast 2-4 sentences)"
@@ -556,7 +555,7 @@ def generate_dynamic_fourth_question(theme_name, score):
             return "If you were in the main character’s place, in which ways would you encourage your friends to be more kind to themselves? (Write atleast 2-4 sentences)"
             
     elif theme_name == "Common Humanity vs Isolation":
-        if score < 20:
+        if score < 21:
             return "Think of a moment when your struggle felt personal. What thoughts came up, and how did you try to hold space for yourself at that moment? (Write atleast 2-4 sentences)"
         elif score in [21, 27]: # Medium score
             return "Think of a moment when your struggle felt personal. What thoughts came up, and how did you try to hold space for yourself at that moment? (Write atleast 2-4 sentences)"
@@ -564,7 +563,7 @@ def generate_dynamic_fourth_question(theme_name, score):
             return "If you were in the main character’s place, in which ways would you nudge your friends to think that others also go through similar situations? (Write atleast 2-4 sentences)"
 
     elif theme_name == "Mindfulness vs Overidentification":
-        if score < 20:  # Low Score 
+        if score < 21:  # Low Score 
             return "Recall a time when you tried to sit with a painful feeling without letting it overwhelm you. What helped you stay with it, or what made it difficult? (Write atleast 2-4 sentences)"
         elif score in [21, 27]: # Medium score
             return "Recall a time when you tried to sit with a painful feeling without letting it overwhelm you. What helped you stay with it, or what made it difficult? (Write atleast 2-4 sentences)"
@@ -679,7 +678,13 @@ def display_reflection_page(pdata, primary_theme_map, scores, go_to_next_page):
 
     # --- Q4: Dynamic Question for Generated Scenes ---
     if scene_type in ['compassion', 'kinder']:
-        theme_name, _ = primary_theme_map[scene_number]
+        
+        theme_scene_number = scene_number
+        if scene_type == 'kinder':
+            theme_scene_number = scene_number - 1 
+        
+        theme_name, _ = primary_theme_map[theme_scene_number]
+        
         # This maps the theme to the correct score name
         score_key_map = { 
             "Self-Kindness vs Self-Judgment": "Self-Kindness vs Self-Judgment",
